@@ -326,25 +326,42 @@ export default function App() {
     }
     const fetchCommits = async () => {
       try {
-        let res = await fetch("https://api.github.com/repos/beorgsh/Anitok-v3/commits?per_page=5");
+        let repoToFetch = "beorgsh/Anitok-v3";
+        let res = await fetch(`https://api.github.com/repos/${repoToFetch}/commits?per_page=5`);
+        
         if (!res.ok) {
-          // Fallback to previous public repo if Anitok-v3 is private or 404
+          // Fallback to latest pushed repositories if Anitok-v3 is private or uninitialised
+          const reposRes = await fetch("https://api.github.com/users/beorgsh/repos?sort=pushed&per_page=10");
+          if (reposRes.ok) {
+            const reposData = await reposRes.json();
+            if (Array.isArray(reposData)) {
+              const match = reposData.find((r: any) => 
+                r.name && (r.name.toLowerCase().includes('anitok') || r.name.toLowerCase().includes('ani'))
+              );
+              if (match && match.full_name) {
+                res = await fetch(`https://api.github.com/repos/${match.full_name}/commits?per_page=5`);
+              }
+            }
+          }
+        }
+
+        if (!res.ok) {
+          res = await fetch("https://api.github.com/repos/beorgsh/Anitok-Setup/commits?per_page=5");
+        }
+        if (!res.ok) {
           res = await fetch("https://api.github.com/repos/beorgsh/Anitok-v1.0.2/commits?per_page=5");
         }
+
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data) && data.length > 0) {
             setCommits(data);
             const latestSha = data[0].sha;
             const lastSeenSha = localStorage.getItem('last_seen_commit_sha');
-            const lastSeenVersion = localStorage.getItem('last_seen_update_version');
 
+            // Pop up modal every time a NEW commit SHA is pushed!
             if (lastSeenSha !== latestSha) {
-              if (!lastSeenSha && lastSeenVersion === "1.3.1") {
-                localStorage.setItem('last_seen_commit_sha', latestSha);
-              } else {
-                setShowUpdatesModal(true);
-              }
+              setShowUpdatesModal(true);
             }
           }
         }
@@ -352,13 +369,6 @@ export default function App() {
         // Silently handle offline / CORS / rate-limit without logging error
       } finally {
         setLoadingCommits(false);
-      }
-
-      // Fallback version checking
-      const CURRENT_UPDATE_VERSION = "1.3.1";
-      const lastSeen = localStorage.getItem('last_seen_update_version');
-      if (lastSeen !== CURRENT_UPDATE_VERSION) {
-        setShowUpdatesModal(true);
       }
     };
 
@@ -373,6 +383,10 @@ export default function App() {
       }
       localStorage.setItem('last_seen_update_version', "1.3.1");
     } catch (e) {}
+  };
+
+  const handleOpenUpdatesModal = () => {
+    setShowUpdatesModal(true);
   };
 
   // Real-time horizontal swipe & drag state
@@ -1264,6 +1278,7 @@ export default function App() {
                       activeTab={activeTab}
                       onChangeTab={handleTabChange}
                       onOpenSearch={() => setIsSearchOpen(true)}
+                      onOpenUpdates={handleOpenUpdatesModal}
                       server={server}
                       onChangeServer={setServer}
                     />
@@ -1628,6 +1643,7 @@ export default function App() {
             subtitleSettings={subtitleSettings}
             onUpdateSubtitleSettings={handleUpdateSubtitleSettings}
             hasSubtitles={subtitlesLoadedMap[currentAnime.id] ?? (currentAnime.is_sub !== undefined ? currentAnime.is_sub > 0 : true)}
+            onOpenUpdates={handleOpenUpdatesModal}
           />
 
           <SubtitleSettingsModal

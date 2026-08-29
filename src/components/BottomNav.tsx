@@ -25,7 +25,7 @@ export const BottomNav: React.FC<BottomNavProps> = React.memo(({
   userProfile
 }) => {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 h-14 sm:h-15 bg-gradient-to-t from-black/95 via-black/80 to-black/20 backdrop-blur-md border-t border-zinc-800/80 px-2 sm:px-4 flex items-center justify-around text-white pointer-events-auto select-none">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 h-14 sm:h-15 bg-zinc-950/95 backdrop-blur-xl border-t border-zinc-800/80 px-2 sm:px-4 flex items-center justify-around text-white pointer-events-auto select-none">
       {/* Home */}
       <button
         id="nav-home"

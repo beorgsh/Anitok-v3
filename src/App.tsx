@@ -1312,7 +1312,13 @@ export default function App() {
                       ref={topHeaderRef}
                       activeTab={activeTab}
                       onChangeTab={handleTabChange}
-                      onOpenSearch={() => setIsSearchOpen(true)}
+                      onOpenSearch={() => {
+                        if (!isAuthenticated) {
+                          setIsAuthModalOpen(true);
+                        } else {
+                          setIsSearchOpen(true);
+                        }
+                      }}
                       onOpenUpdates={handleOpenUpdatesModal}
                       server={server}
                       onChangeServer={setServer}
@@ -1514,7 +1520,6 @@ export default function App() {
                                         }
                                       }}
                                       onWatchFull={() => handleWatchFull(anime)}
-                                      onOpenSettings={() => setIsSubSettingsOpen(true)}
                                       onNextEp={() =>
                                         setEpMap((prev) => {
                                           const maxEp = getLatestEpisode(anime);
@@ -1530,7 +1535,13 @@ export default function App() {
                                           [anime.id]: Math.max(1, ep - 1),
                                         }))
                                       }
-                                      onOpenEpisodesDrawer={() => setIsCommentsOpen(true)}
+                                      onSelectEp={(selectedEp) =>
+                                        setEpMap((prev) => ({
+                                          ...prev,
+                                          [anime.id]: selectedEp,
+                                        }))
+                                      }
+                                      onUpdateSubtitleSettings={handleUpdateSubtitleSettings}
                                       hideFeedUi={hideFeedUi}
                                       onToggleHideFeedUi={() => setHideFeedUi(!hideFeedUi)}
                                     />
@@ -1547,8 +1558,12 @@ export default function App() {
                                       onChangeServer={setServer}
                                       hideFeedUi={hideFeedUi}
                                       onSelectGenre={(genre) => {
-                                        setSearchInitialGenre(genre);
-                                        setIsSearchOpen(true);
+                                        if (!isAuthenticated) {
+                                          setIsAuthModalOpen(true);
+                                        } else {
+                                          setSearchInitialGenre(genre);
+                                          setIsSearchOpen(true);
+                                        }
                                       }}
                                     />
 
@@ -1632,7 +1647,7 @@ export default function App() {
               <BottomNav
                 currentNav={currentNav}
                 onChangeNav={(nav) => {
-                  if ((nav === 'profile' || nav === 'history') && !isAuthenticated) {
+                  if ((nav === 'profile' || nav === 'history' || nav === 'explore') && !isAuthenticated) {
                     setIsAuthModalOpen(true);
                   } else {
                     setCurrentNav(nav);
@@ -1665,6 +1680,11 @@ export default function App() {
             isOpen={isCommentsOpen}
             onClose={() => setIsCommentsOpen(false)}
             onSelectEp={(selectedEp) => {
+              if (!isAuthenticated) {
+                setIsCommentsOpen(false);
+                setIsAuthModalOpen(true);
+                return;
+              }
               setEpMap((prev) => ({ ...prev, [currentAnime.id]: selectedEp }));
             }}
           />
@@ -1704,7 +1724,7 @@ export default function App() {
         currentNav={currentNav}
         onChangeNav={(nav) => {
           setIsSearchOpen(false);
-          if ((nav === 'profile' || nav === 'history') && !isAuthenticated) {
+          if ((nav === 'profile' || nav === 'history' || nav === 'explore') && !isAuthenticated) {
             setIsAuthModalOpen(true);
           } else {
             setCurrentNav(nav);
@@ -1722,6 +1742,10 @@ export default function App() {
         }}
         isAuthenticated={isAuthenticated}
         userProfile={userProfile}
+        onRequireAuth={() => {
+          setIsSearchOpen(false);
+          setIsAuthModalOpen(true);
+        }}
         onSelectAnime={(anime, episode) => {
           registerAnimeMetadata([anime]);
           if (typeof episode === 'number') {

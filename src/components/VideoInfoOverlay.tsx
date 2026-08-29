@@ -78,7 +78,7 @@ export const VideoInfoOverlay: React.FC<VideoInfoOverlayProps> = React.memo(({
       className={`absolute z-45 flex flex-col gap-1.5 text-white pointer-events-auto transition-all duration-300 ${
         isFullscreen
           ? 'bottom-12 sm:bottom-16 left-3 sm:left-6 right-20 sm:right-24 max-w-sm sm:max-w-xl drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]'
-          : 'bottom-18 sm:bottom-22 left-2.5 sm:left-3 right-14 sm:right-16 max-w-[270px] sm:max-w-xl pb-0.5'
+          : 'bottom-[calc(72px+env(safe-area-inset-bottom))] sm:bottom-[calc(88px+env(safe-area-inset-bottom))] left-2.5 sm:left-3 right-14 sm:right-16 max-w-[270px] sm:max-w-xl pb-0.5'
       }`}
       onClick={(e) => e.stopPropagation()}
     >

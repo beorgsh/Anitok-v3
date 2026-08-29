@@ -6,6 +6,8 @@ import { fetchAnimeStream, getProxiedM3u8Url, getCachedStream, checkDubAvailable
 import { UnifiedMediaManager } from '../services/UnifiedMediaManager';
 import { saveWatchProgress, getSavedTimestamp } from '../services/watchHistory';
 import { GradientCircleSpinner } from './LazyLoadSkeleton';
+import { EpisodesDrawer } from './EpisodesDrawer';
+import { SubtitleSettingsModal } from './SubtitleSettingsModal';
 
 interface VttCueItem {
   start: number;
@@ -134,6 +136,8 @@ interface VideoPlayerProps {
   onSubtitlesLoaded?: (hasSubtitles: boolean) => void;
   hideFeedUi?: boolean;
   onToggleHideFeedUi?: () => void;
+  onSelectEp?: (ep: number) => void;
+  onUpdateSubtitleSettings?: (settings: Partial<SubtitleSettings>) => void;
 }
 
 export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
@@ -168,10 +172,15 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
   onSubtitlesLoaded,
   hideFeedUi = false,
   onToggleHideFeedUi,
+  onSelectEp,
+  onUpdateSubtitleSettings,
 }) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const hlsRef = useRef<Hls | null>(null);
   const parsedVttCuesRef = useRef<VttCueItem[]>([]);
+
+  const [showInPlayerEpModal, setShowInPlayerEpModal] = useState<boolean>(false);
+  const [showInPlayerSubSettingsModal, setShowInPlayerSubSettingsModal] = useState<boolean>(false);
 
   const [currentSubtitle, setCurrentSubtitle] = useState<string>('');
   const [videoDimensions, setVideoDimensions] = useState<{ width: number; height: number }>({ width: 16, height: 9 });
@@ -1484,7 +1493,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
       <div
         ref={stageRef}
         className={`absolute top-0 left-0 right-0 ${
-          isFullscreen ? 'bottom-0' : 'bottom-14 sm:bottom-15'
+          isFullscreen ? 'bottom-0' : 'bottom-[calc(56px+env(safe-area-inset-bottom))] sm:bottom-[calc(60px+env(safe-area-inset-bottom))]'
         } flex items-center justify-center overflow-hidden bg-black select-none pointer-events-none`}
       >
         {/* Dynamic Video Aspect Ratio Frame Container */}
@@ -1652,16 +1661,18 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
             const customRadiusPx = subtitleSettings?.borderRadius ?? 8;
             const customHeightOffsetPx = subtitleSettings?.heightPosition ?? 8;
 
-            // Direct height position with zero extra offset when 0 is selected
-            const bottomOffsetPx = isFullscreen && controlsVisible
-              ? Math.max(customHeightOffsetPx, 44)
-              : customHeightOffsetPx;
+            // Direct height position with safe area + bottom navbar height when in portrait
+            const bottomOffsetStr = isFullscreen
+              ? `${controlsVisible ? Math.max(customHeightOffsetPx, 44) : customHeightOffsetPx}px`
+              : hideFeedUi
+                ? `${customHeightOffsetPx}px`
+                : `calc(${customHeightOffsetPx}px + 56px + env(safe-area-inset-bottom))`;
 
             return (
               <div
                 className="absolute inset-x-0 z-25 flex flex-col items-center justify-end pointer-events-none transition-none"
                 style={{
-                  bottom: `${bottomOffsetPx}px`,
+                  bottom: bottomOffsetStr,
                 }}
               >
                 <div
@@ -1900,7 +1911,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
         <div
           ref={progressBarRef}
           className={`absolute left-0 right-0 h-4 z-40 cursor-pointer flex items-end group touch-none select-none px-0 transition-all duration-300 ease-out ${
-            hideFeedUi ? 'bottom-2 sm:bottom-3' : 'bottom-14 sm:bottom-15'
+            hideFeedUi ? 'bottom-2 sm:bottom-3' : 'bottom-[calc(56px+env(safe-area-inset-bottom))] sm:bottom-[calc(60px+env(safe-area-inset-bottom))]'
           } ${
             controlsVisible ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-2 pointer-events-none'
           }`}
@@ -2055,6 +2066,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
+                  setShowInPlayerEpModal(true);
                   if (onOpenEpisodesDrawer) {
                     onOpenEpisodesDrawer();
                   }
@@ -2087,6 +2099,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
+                  setShowInPlayerSubSettingsModal(true);
                   if (onOpenSettings) {
                     onOpenSettings();
                   }
@@ -2313,6 +2326,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
               id={`btn-settings-${anime.id}`}
               onClick={(e) => {
                 e.stopPropagation();
+                setShowInPlayerSubSettingsModal(true);
                 if (onOpenSettings) {
                   onOpenSettings();
                 }
@@ -2451,6 +2465,35 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
             )}
           </div>
         </div>
+      )}
+
+      {/* In-Player Episode List Modal */}
+      <EpisodesDrawer
+        anime={anime}
+        currentEp={currentEp}
+        isOpen={showInPlayerEpModal}
+        onClose={() => setShowInPlayerEpModal(false)}
+        onSelectEp={(selectedEp) => {
+          setShowInPlayerEpModal(false);
+          if (onSelectEp) {
+            onSelectEp(selectedEp);
+          }
+        }}
+      />
+
+      {/* In-Player Subtitle Settings Modal */}
+      {subtitleSettings && onUpdateSubtitleSettings && (
+        <SubtitleSettingsModal
+          anime={anime}
+          isOpen={showInPlayerSubSettingsModal}
+          onClose={() => setShowInPlayerSubSettingsModal(false)}
+          subtitleSettings={subtitleSettings}
+          onUpdateSubtitleSettings={onUpdateSubtitleSettings}
+          hasSubtitles={
+            (streamData?.subtitles && streamData.subtitles.length > 0) ||
+            parsedVttCuesRef.current.length > 0
+          }
+        />
       )}
     </div>
   );

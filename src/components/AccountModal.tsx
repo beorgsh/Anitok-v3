@@ -47,7 +47,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, use
 
         {userProfile && (
           <div className="flex flex-col items-center gap-4 mt-2">
-            <div className="relative w-24 h-24 rounded-full overflow-hidden bg-zinc-900 border-2 border-pink-500 shadow-[0_0_15px_rgba(236,72,153,0.3)]">
+            <div className="relative w-24 h-24 rounded-full overflow-hidden bg-zinc-900 border-2 border-white shadow-[0_0_15px_rgba(255,255,255,0.4)]">
               <img 
                 src={`https://api.dicebear.com/7.x/${userProfile.avatarStyle || 'adventurer'}/svg?seed=${userProfile.avatarSeed}`} 
                 alt="Avatar"

@@ -94,7 +94,7 @@ export const TopHeader = forwardRef<TopHeaderHandle, TopHeaderProps>(({
   }, [activeTab]);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 px-2.5 sm:px-4 pt-3 sm:pt-4 pb-2 flex items-center justify-between text-white pointer-events-auto select-none">
+    <header className="fixed top-0 left-0 right-0 z-50 px-2.5 sm:px-4 pt-[calc(12px+env(safe-area-inset-top))] sm:pt-[calc(16px+env(safe-area-inset-top))] pb-2 flex items-center justify-between text-white pointer-events-auto select-none">
       {/* Spacer on Left */}
       <div className="w-8 h-8 pointer-events-none" />
 
@@ -151,9 +151,9 @@ export const TopHeader = forwardRef<TopHeaderHandle, TopHeaderProps>(({
         {/* Dynamic Underline covering full text width of active tab, moving in real time */}
         <div
           ref={indicatorRef}
-          className="absolute bottom-0 h-0.5 rounded-full pointer-events-none shadow-md"
+          className="absolute bottom-0 h-0.5 rounded-full pointer-events-none bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]"
           style={{
-            backgroundColor: activeTab === 'reels' ? '#10b981' : activeTab === 'latest' ? '#22d3ee' : '#ec4899',
+            backgroundColor: '#ffffff',
           }}
         />
       </div>

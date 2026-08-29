@@ -16,6 +16,7 @@ interface SearchViewProps {
   onOpenUpload?: () => void;
   isAuthenticated?: boolean;
   userProfile?: any;
+  onRequireAuth?: () => void;
 }
 
 const GENRE_TAGS = [
@@ -57,6 +58,7 @@ export const SearchView: React.FC<SearchViewProps> = ({
   onOpenUpload,
   isAuthenticated,
   userProfile,
+  onRequireAuth,
 }) => {
   const [query, setQuery] = useState<string>('');
   const [selectedGenre, setSelectedGenre] = useState<string | null>(initialGenre);
@@ -244,6 +246,10 @@ export const SearchView: React.FC<SearchViewProps> = ({
   }, [isOpen, selectedGenre, hasMore, loadingMore, loading, handleLoadMore]);
 
   const handleGenreToggle = (genre: string | null) => {
+    if (!isAuthenticated && onRequireAuth) {
+      onRequireAuth();
+      return;
+    }
     setSelectedGenre((prev) => (prev === genre ? null : genre));
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
@@ -650,6 +656,10 @@ export const SearchView: React.FC<SearchViewProps> = ({
                         <button
                           key={epNum}
                           onClick={() => {
+                            if (!isAuthenticated && onRequireAuth) {
+                              onRequireAuth();
+                              return;
+                            }
                             onSelectAnime(selectedDetailAnime, epNum);
                             setSelectedDetailAnime(null);
                             onClose();

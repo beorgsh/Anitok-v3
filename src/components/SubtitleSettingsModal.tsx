@@ -59,21 +59,21 @@ export const SubtitleSettingsModal: React.FC<SubtitleSettingsModalProps> = ({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md mx-auto bg-zinc-900/98 border-t border-zinc-850 rounded-t-3xl p-5 shadow-2xl overflow-hidden max-h-[85vh] overflow-y-auto"
+        className="w-full max-w-md mx-auto bg-zinc-900/98 border border-white/20 rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl overflow-hidden max-h-[85vh] overflow-y-auto shadow-[0_0_25px_rgba(255,255,255,0.08)]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Grabbing Handle */}
-        <div className="w-10 h-1 bg-zinc-700 rounded-full mx-auto mb-3" />
+        <div className="w-10 h-1 bg-white/40 rounded-full mx-auto mb-3" />
 
         {/* Modal Header */}
-        <div className="flex items-center justify-between pb-3.5 border-b border-zinc-800/80">
+        <div className="flex items-center justify-between pb-3.5 border-b border-white/20">
           <div className="flex items-center gap-2">
-            <Settings2 className="w-4.5 h-4.5 text-pink-500 animate-spin-slow" />
-            <h3 className="font-extrabold text-sm text-zinc-100">CC & Subtitle Settings</h3>
+            <Settings2 className="w-4.5 h-4.5 text-white animate-spin-slow" />
+            <h3 className="font-extrabold text-sm text-white">CC & Subtitle Settings</h3>
           </div>
           <button
             onClick={onClose}
-            className="w-7 h-7 rounded-full bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center text-zinc-400 hover:text-zinc-200 transition-colors"
+            className="w-7 h-7 rounded-full bg-zinc-800 border border-white/20 hover:bg-zinc-700 flex items-center justify-center text-zinc-300 hover:text-white transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -117,15 +117,15 @@ export const SubtitleSettingsModal: React.FC<SubtitleSettingsModalProps> = ({
         {subtitleSettings.visible && (
           <div className="flex flex-col gap-4 mt-2">
             {/* Live Preview Box */}
-            <div className="bg-zinc-950/80 rounded-2xl p-3 border border-zinc-800/80">
+            <div className="bg-zinc-950/80 rounded-2xl p-3 border border-white/20">
               <div className="flex items-center justify-between text-[9px] font-bold text-zinc-400 uppercase tracking-wider mb-2">
                 <span className="flex items-center gap-1">
-                  <Sparkles className="w-3.5 h-3.5 text-pink-400" />
+                  <Sparkles className="w-3.5 h-3.5 text-white" />
                   Live Font & Background Preview
                 </span>
-                <span className="text-zinc-500">Live Feedback</span>
+                <span className="text-zinc-400">Live Feedback</span>
               </div>
-              <div className="w-full h-16 bg-zinc-900 rounded-xl flex items-center justify-center p-2 relative overflow-hidden border border-zinc-850">
+              <div className="w-full h-16 bg-zinc-900 rounded-xl flex items-center justify-center p-2 relative overflow-hidden border border-white/10">
                 <div
                   className="px-3 py-1 text-center font-bold tracking-wide break-words max-w-[90%]"
                   style={{
@@ -142,7 +142,7 @@ export const SubtitleSettingsModal: React.FC<SubtitleSettingsModalProps> = ({
             </div>
 
             {/* Customization Sliders */}
-            <div className="bg-zinc-950/40 rounded-2xl p-3 border border-zinc-850 flex flex-col gap-3">
+            <div className="bg-zinc-950/40 rounded-2xl p-3 border border-white/20 flex flex-col gap-3">
               {/* Font Size slider */}
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between text-xs text-zinc-300">

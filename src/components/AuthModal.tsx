@@ -104,9 +104,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       >
         <button 
           onClick={() => onClose()}
-          className="absolute top-4 right-4 text-zinc-500 hover:text-white transition-colors cursor-pointer"
+          className="absolute top-4 right-4 relative p-[1.5px] rounded-full overflow-hidden group cursor-pointer transition-transform hover:scale-105 active:scale-95 z-10"
+          title="Close"
         >
-          <X className="w-5 h-5" />
+          <div 
+            className="absolute inset-[-150%] bg-gradient-to-r from-pink-500 via-cyan-400 to-purple-500 animate-spin" 
+            style={{ animationDuration: '3s' }} 
+          />
+          <div className="relative w-7 h-7 bg-zinc-950 rounded-full flex items-center justify-center text-zinc-400 group-hover:text-white transition-colors">
+            <X className="w-4 h-4" />
+          </div>
         </button>
 
         <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-pink-500 via-purple-500 to-cyan-400 p-[2px] flex items-center justify-center shadow-xl shadow-pink-500/20 mt-2 shrink-0">

@@ -25,7 +25,7 @@ export const BottomNav: React.FC<BottomNavProps> = React.memo(({
   userProfile
 }) => {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 h-14 sm:h-15 bg-zinc-950/95 backdrop-blur-xl border-t border-zinc-800/80 px-2 sm:px-4 flex items-center justify-around text-white pointer-events-auto select-none">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 h-[calc(56px+env(safe-area-inset-bottom))] sm:h-[calc(60px+env(safe-area-inset-bottom))] pb-[env(safe-area-inset-bottom)] bg-zinc-950/95 backdrop-blur-xl border-t border-zinc-800/80 px-2 sm:px-4 flex items-center justify-around text-white pointer-events-auto select-none">
       {/* Home */}
       <button
         id="nav-home"
@@ -56,7 +56,7 @@ export const BottomNav: React.FC<BottomNavProps> = React.memo(({
         onClick={onOpenUpload}
         className={`relative group active:scale-90 transition-transform flex items-center justify-center shrink-0 ${
           isAuthenticated && userProfile 
-            ? 'w-10 h-10 rounded-full overflow-hidden shadow-[0_0_10px_rgba(236,72,153,0.3)] border-2 border-pink-500 bg-zinc-900 -mt-4' 
+            ? 'w-10 h-10 rounded-full overflow-hidden shadow-[0_0_12px_rgba(255,255,255,0.4)] border-2 border-white bg-zinc-900 -mt-4' 
             : 'w-10 h-7 rounded-lg overflow-hidden shadow-[0_0_10px_rgba(236,72,153,0.3)]'
         }`}
         title={isAuthenticated ? 'Account' : 'Sign In'}

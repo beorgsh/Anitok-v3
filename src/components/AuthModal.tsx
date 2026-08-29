@@ -11,6 +11,7 @@ import {
   githubProvider,
   signInWithPopup
 } from '../lib/firebase';
+import { setIsAuthenticatedCached, saveCachedAuthUser } from '../lib/cookies';
 import toast from 'react-hot-toast';
 
 interface AuthModalProps {
@@ -33,7 +34,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     try {
       setLoadingProvider('google');
       setAuthError(null);
-      await signInWithPopup(auth, googleProvider);
+      const res = await signInWithPopup(auth, googleProvider);
+      if (res?.user) {
+        setIsAuthenticatedCached(true);
+        saveCachedAuthUser({
+          uid: res.user.uid,
+          email: res.user.email,
+          displayName: res.user.displayName,
+          photoURL: res.user.photoURL,
+        });
+      }
       toast.success('Signed in with Google!');
       onClose(true);
       if (onOpenProfileSetup) {
@@ -53,7 +63,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     try {
       setLoadingProvider('github');
       setAuthError(null);
-      await signInWithPopup(auth, githubProvider);
+      const res = await signInWithPopup(auth, githubProvider);
+      if (res?.user) {
+        setIsAuthenticatedCached(true);
+        saveCachedAuthUser({
+          uid: res.user.uid,
+          email: res.user.email,
+          displayName: res.user.displayName,
+          photoURL: res.user.photoURL,
+        });
+      }
       toast.success('Signed in with GitHub!');
       onClose(true);
       if (onOpenProfileSetup) {

@@ -2,7 +2,13 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './lib/firebase';
 import { fetchUserDataFromFirebase, syncLikesToFirebase } from './lib/firebaseStore';
-import { getCachedUserProfile, saveCachedUserProfile } from './lib/cookies';
+import {
+  getCachedUserProfile,
+  saveCachedUserProfile,
+  getIsAuthenticatedCached,
+  setIsAuthenticatedCached,
+  saveCachedAuthUser
+} from './lib/cookies';
 import { AnimeItem, ServerType, SubtitleSettings, getLatestEpisode } from './types/anime';
 import { setWatchHistory, getWatchHistory } from './services/watchHistory';
 import { fetchRecentAnime, prefetchAnimeStreams } from './services/animeApi';
@@ -147,6 +153,13 @@ export default function App() {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setIsAuthenticated(true);
+        setIsAuthenticatedCached(true);
+        saveCachedAuthUser({
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName,
+          photoURL: user.photoURL,
+        });
         console.log('User signed in, syncing from Firebase...', user.uid);
         const data = await fetchUserDataFromFirebase();
         
@@ -184,11 +197,11 @@ export default function App() {
 
       } else {
         setIsAuthenticated(false);
+        setIsAuthenticatedCached(false);
+        saveCachedAuthUser(null);
         setUserProfile(getCachedUserProfile());
         setIsProfileSetupOpen(false);
         setIsAccountModalOpen(false);
-        setCurrentNav('home');
-        setActiveTab('foryou');
       }
     });
 
@@ -264,7 +277,7 @@ export default function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [isProfileSetupOpen, setIsProfileSetupOpen] = useState<boolean>(false);
   const [isAccountModalOpen, setIsAccountModalOpen] = useState<boolean>(false);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => getIsAuthenticatedCached());
   const [userProfile, setUserProfile] = useState<any>(() => getCachedUserProfile());
   const [showUpdatesModal, setShowUpdatesModal] = useState<boolean>(false);
   const [searchInitialGenre, setSearchInitialGenre] = useState<string | null>(null);

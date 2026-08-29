@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, LogOut, Loader2, AlertCircle } from 'lucide-react';
 import { auth, signOut } from '../lib/firebase';
+import { setIsAuthenticatedCached, saveCachedUserProfile, saveCachedAuthUser } from '../lib/cookies';
 
 interface AccountModalProps {
   isOpen: boolean;
@@ -18,6 +19,9 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, use
     setIsLoggingOut(true);
     try {
       await signOut(auth);
+      setIsAuthenticatedCached(false);
+      saveCachedUserProfile(null);
+      saveCachedAuthUser(null);
       onClose();
       window.location.reload();
     } catch (error) {

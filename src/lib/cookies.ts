@@ -1,4 +1,4 @@
-// Cookie utilities for instant persistent profile caching
+// Cookie & LocalStorage utilities for instant persistent profile and session caching
 
 export const getCookie = (name: string): string => {
   if (typeof document === 'undefined') return '';
@@ -29,6 +29,63 @@ export interface StoredUserProfile {
   avatarStyle: string;
   avatarSeed: string;
 }
+
+export interface CachedAuthUser {
+  uid: string;
+  email?: string | null;
+  displayName?: string | null;
+  photoURL?: string | null;
+}
+
+export const getIsAuthenticatedCached = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  try {
+    const local = localStorage.getItem('anitok_is_authenticated');
+    if (local === 'true') return true;
+    const cookie = getCookie('anitok_is_authenticated');
+    if (cookie === 'true') return true;
+  } catch (e) {}
+  return false;
+};
+
+export const setIsAuthenticatedCached = (isAuth: boolean) => {
+  if (typeof window === 'undefined') return;
+  try {
+    if (isAuth) {
+      localStorage.setItem('anitok_is_authenticated', 'true');
+      setCookie('anitok_is_authenticated', 'true', 365);
+    } else {
+      localStorage.removeItem('anitok_is_authenticated');
+      removeCookie('anitok_is_authenticated');
+    }
+  } catch (e) {}
+};
+
+export const getCachedAuthUser = (): CachedAuthUser | null => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const local = localStorage.getItem('anitok_auth_user');
+    if (local) {
+      return JSON.parse(local);
+    }
+  } catch (e) {}
+  return null;
+};
+
+export const saveCachedAuthUser = (user: CachedAuthUser | null) => {
+  if (typeof window === 'undefined') return;
+  try {
+    if (user) {
+      localStorage.setItem('anitok_auth_user', JSON.stringify(user));
+      setCookie('anitok_auth_uid', user.uid, 365);
+      if (user.email) setCookie('anitok_auth_email', user.email, 365);
+    } else {
+      localStorage.removeItem('anitok_auth_user');
+      removeCookie('anitok_auth_uid');
+      removeCookie('anitok_auth_email');
+    }
+  } catch (e) {}
+};
 
 export const getCachedUserProfile = (): StoredUserProfile | null => {
   const username = getCookie('anitok_user_name');

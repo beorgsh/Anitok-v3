@@ -1,6 +1,8 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import {
   getAuth,
+  setPersistence,
+  browserLocalPersistence,
   GoogleAuthProvider,
   GithubAuthProvider,
   signInWithPopup,
@@ -28,11 +30,21 @@ const firebaseConfig = {
 // Initialize Firebase app
 export const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 export const auth = getAuth(app);
+
+// Explicitly ensure auth persistence in browser localStorage/IndexedDB
+if (typeof window !== 'undefined') {
+  setPersistence(auth, browserLocalPersistence).catch((err) => {
+    console.warn('Could not set browserLocalPersistence:', err);
+  });
+}
+
 export const db = getFirestore(app);
 export const googleProvider = new GoogleAuthProvider();
 export const githubProvider = new GithubAuthProvider();
 
 export {
+  setPersistence,
+  browserLocalPersistence,
   signInWithPopup,
   signOut,
   onAuthStateChanged,

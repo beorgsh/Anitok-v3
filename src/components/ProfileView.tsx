@@ -4,7 +4,13 @@ import { AnimeItem } from '../types/anime';
 import { getWatchHistory } from '../services/watchHistory';
 import { auth, googleProvider, signInWithPopup, signOut, onAuthStateChanged, User } from '../lib/firebase';
 import { syncProfileToFirebase, fetchUserDataFromFirebase } from '../lib/firebaseStore';
-import { getCachedUserProfile, saveCachedUserProfile, StoredUserProfile } from '../lib/cookies';
+import {
+  getCachedUserProfile,
+  saveCachedUserProfile,
+  StoredUserProfile,
+  setIsAuthenticatedCached,
+  saveCachedAuthUser
+} from '../lib/cookies';
 
 interface ProfileViewProps {
   likedAnimeList: AnimeItem[];
@@ -120,7 +126,16 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
   const handleGoogleSignIn = async () => {
     try {
-      await signInWithPopup(auth, googleProvider);
+      const res = await signInWithPopup(auth, googleProvider);
+      if (res?.user) {
+        setIsAuthenticatedCached(true);
+        saveCachedAuthUser({
+          uid: res.user.uid,
+          email: res.user.email,
+          displayName: res.user.displayName,
+          photoURL: res.user.photoURL,
+        });
+      }
       window.location.reload();
     } catch (error) {
       console.error('Failed to sign in', error);
@@ -130,7 +145,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const handleSignOut = async () => {
     try {
       await signOut(auth);
+      setIsAuthenticatedCached(false);
       saveCachedUserProfile(null);
+      saveCachedAuthUser(null);
       setProfile(null);
       window.location.reload();
     } catch (error) {

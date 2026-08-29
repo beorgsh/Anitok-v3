@@ -326,35 +326,39 @@ export default function App() {
     }
     const fetchCommits = async () => {
       try {
-        const res = await fetch("https://api.github.com/repos/beorgsh/Anitok-v1.0.2/commits?per_page=5");
-        if (!res.ok) throw new Error("Failed to fetch commits");
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
-          setCommits(data);
-          const latestSha = data[0].sha;
-          const lastSeenSha = localStorage.getItem('last_seen_commit_sha');
-          const lastSeenVersion = localStorage.getItem('last_seen_update_version');
+        let res = await fetch("https://api.github.com/repos/beorgsh/Anitok-v3/commits?per_page=5");
+        if (!res.ok) {
+          // Fallback to previous public repo if Anitok-v3 is private or 404
+          res = await fetch("https://api.github.com/repos/beorgsh/Anitok-v1.0.2/commits?per_page=5");
+        }
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            setCommits(data);
+            const latestSha = data[0].sha;
+            const lastSeenSha = localStorage.getItem('last_seen_commit_sha');
+            const lastSeenVersion = localStorage.getItem('last_seen_update_version');
 
-          if (lastSeenSha !== latestSha) {
-            // If they have never seen any commit SHA, but have already acknowledged the current version (e.g. from a fallback check or previous session),
-            // we initialize the SHA silently to avoid displaying the modal until a genuine NEW push occurs.
-            if (!lastSeenSha && lastSeenVersion === "1.3.1") {
-              localStorage.setItem('last_seen_commit_sha', latestSha);
-            } else {
-              setShowUpdatesModal(true);
+            if (lastSeenSha !== latestSha) {
+              if (!lastSeenSha && lastSeenVersion === "1.3.1") {
+                localStorage.setItem('last_seen_commit_sha', latestSha);
+              } else {
+                setShowUpdatesModal(true);
+              }
             }
           }
         }
-      } catch (e) {
-        console.error("Error fetching commits:", e);
-        // Fallback version checking
-        const CURRENT_UPDATE_VERSION = "1.3.1";
-        const lastSeen = localStorage.getItem('last_seen_update_version');
-        if (lastSeen !== CURRENT_UPDATE_VERSION) {
-          setShowUpdatesModal(true);
-        }
+      } catch {
+        // Silently handle offline / CORS / rate-limit without logging error
       } finally {
         setLoadingCommits(false);
+      }
+
+      // Fallback version checking
+      const CURRENT_UPDATE_VERSION = "1.3.1";
+      const lastSeen = localStorage.getItem('last_seen_update_version');
+      if (lastSeen !== CURRENT_UPDATE_VERSION) {
+        setShowUpdatesModal(true);
       }
     };
 
@@ -1767,7 +1771,7 @@ export default function App() {
               ) : commits.length > 0 ? (
                 <div className="space-y-3.5">
                   <div className="text-zinc-500 text-[10px] uppercase tracking-wider font-semibold border-b border-zinc-900 pb-1">
-                    * branch main (beorgsh/Anitok-v1.0.2)
+                    * branch main (beorgsh/Anitok-v3)
                   </div>
                   {commits.map((c, idx) => {
                     const message = c.commit?.message || "Code update";

@@ -1,0 +1,8 @@
+{
+  "name": "Remix Ani-Tok v1.0.2",
+  "description": "A responsive TikTok UI anime video feed with smooth infinite scrolling, prefetching, and m3u8 stream playback.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

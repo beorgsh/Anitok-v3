@@ -1,0 +1,31 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile settings including display name and avatar",
+      "type": "object",
+      "properties": {
+        "username": { "type": "string", "maxLength": 50 },
+        "avatarStyle": { "type": "string", "maxLength": 50 },
+        "avatarSeed": { "type": "string", "maxLength": 100 }
+      },
+      "required": ["username"]
+    },
+    "UserDoc": {
+      "title": "UserDoc",
+      "description": "User storage document containing profile, likes, and watch history",
+      "type": "object",
+      "properties": {
+        "profile": { "$ref": "#/entities/UserProfile" },
+        "history": { "type": "array" },
+        "likes": { "type": "array" }
+      }
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "#/entities/UserDoc",
+      "description": "Stores user profile, watch history, and liked anime list"
+    }
+  }
+}

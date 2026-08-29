@@ -27,6 +27,63 @@ export const TopHeader = forwardRef<TopHeaderHandle, TopHeaderProps>(({
   const buttonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const indicatorRef = useRef<HTMLDivElement>(null);
 
+  // Pull to refresh state
+  const [pullDistance, setPullDistance] = React.useState<number>(0);
+  const [isRefreshing, setIsRefreshing] = React.useState<boolean>(false);
+  const startYRef = useRef<number | null>(null);
+  const isPullingRef = useRef<boolean>(false);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (isRefreshing) return;
+    const touch = e.touches[0];
+    startYRef.current = touch.clientY;
+    isPullingRef.current = true;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isPullingRef.current || startYRef.current === null || isRefreshing) return;
+    const touch = e.touches[0];
+    const diffY = touch.clientY - startYRef.current;
+
+    if (diffY > 0) {
+      // Spring resistance pulling physics
+      const pull = Math.min(110, diffY * 0.55);
+      setPullDistance(pull);
+
+      if (e.cancelable) {
+        e.preventDefault();
+      }
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (!isPullingRef.current || isRefreshing) return;
+    isPullingRef.current = false;
+    startYRef.current = null;
+
+    if (pullDistance >= 60) {
+      setIsRefreshing(true);
+      // Trigger native vibration if supported
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate(15);
+      }
+      setTimeout(() => {
+        window.location.reload();
+      }, 650);
+    } else {
+      // Bounce animation reset
+      let current = pullDistance;
+      const animateBack = () => {
+        current = Math.max(0, current - 6);
+        setPullDistance(current);
+        if (current > 0) {
+          requestAnimationFrame(animateBack);
+        }
+      };
+      requestAnimationFrame(animateBack);
+    }
+  };
+
   const calculateUnderline = (offset: number) => {
     const currentIdx = TABS.indexOf(activeTab);
     const screenWidth = window.innerWidth || 360;
@@ -94,7 +151,43 @@ export const TopHeader = forwardRef<TopHeaderHandle, TopHeaderProps>(({
   }, [activeTab]);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 px-2.5 sm:px-4 pt-[calc(12px+env(safe-area-inset-top))] sm:pt-[calc(16px+env(safe-area-inset-top))] pb-2 flex items-center justify-between text-white pointer-events-auto select-none">
+    <header
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      className="fixed top-0 left-0 right-0 z-50 px-2.5 sm:px-4 pt-[calc(12px+env(safe-area-inset-top))] sm:pt-[calc(16px+env(safe-area-inset-top))] pb-2 flex items-center justify-between text-white pointer-events-auto select-none"
+    >
+      {/* Pull-to-refresh floating indicator */}
+      {pullDistance > 0 && (
+        <div
+          className="absolute left-1/2 z-50 flex flex-col items-center pointer-events-none transition-transform duration-75"
+          style={{
+            top: `${Math.min(90, pullDistance + 10)}px`,
+            opacity: Math.min(1, pullDistance / 50),
+            transform: `translate(-50%, 0) scale(${Math.min(1.1, pullDistance / 60)})`,
+          }}
+        >
+          <div className="w-9 h-9 rounded-full bg-zinc-900/95 backdrop-blur-md border border-zinc-800 flex items-center justify-center shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+            <svg
+              className={`w-5 h-5 text-emerald-400 ${pullDistance >= 60 ? 'animate-spin' : ''}`}
+              fill="none"
+              viewBox="0 0 24 24"
+              style={{
+                transform: pullDistance >= 60 ? 'none' : `rotate(${pullDistance * 6}deg)`
+              }}
+            >
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </div>
+          {pullDistance >= 60 && (
+            <span className="text-[9px] text-emerald-400 font-bold mt-1.5 tracking-wider uppercase bg-black/60 px-2 py-0.5 rounded-full backdrop-blur-sm">
+              {isRefreshing ? 'Refreshing...' : 'Release to Refresh'}
+            </span>
+          )}
+        </div>
+      )}
+
       {/* Spacer on Left */}
       <div className="w-8 h-8 pointer-events-none" />
 

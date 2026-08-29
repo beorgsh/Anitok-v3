@@ -1,5 +1,5 @@
 import React from 'react';
-import { Download, Smartphone, X, Sparkles, Share, PlusSquare, ExternalLink, Info } from 'lucide-react';
+import { Download, DraftingCompass, X, Sparkles, Share, PlusSquare, ExternalLink, Info } from 'lucide-react';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -64,8 +64,10 @@ export const InstallPWAModal: React.FC<InstallPWAModalProps> = ({
 
         {/* Icon & Title */}
         <div className="flex flex-col items-center text-center">
-          <div className="w-16 h-16 bg-gradient-to-tr from-pink-500 to-rose-600 rounded-2xl flex items-center justify-center shadow-lg mb-4 ring-4 ring-pink-500/20">
-            <Smartphone className="w-8 h-8 text-white" />
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-pink-500 via-purple-500 to-cyan-400 p-[2px] flex items-center justify-center shadow-xl shadow-pink-500/20 mb-4 shrink-0">
+            <div className="w-full h-full bg-black rounded-[14px] flex items-center justify-center">
+              <DraftingCompass className="w-8 h-8 text-white" />
+            </div>
           </div>
 
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-pink-500/10 border border-pink-500/20 text-pink-400 text-xs font-semibold mb-2">

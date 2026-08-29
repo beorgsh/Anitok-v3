@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  LogIn,
+  DraftingCompass,
   X,
   Loader2,
   AlertCircle
@@ -90,9 +90,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <X className="w-5 h-5" />
         </button>
 
-        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-500 to-cyan-500 p-0.5 flex items-center justify-center shadow-lg shadow-pink-500/20 mt-2 shrink-0">
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-pink-500 via-purple-500 to-cyan-400 p-[2px] flex items-center justify-center shadow-xl shadow-pink-500/20 mt-2 shrink-0">
           <div className="w-full h-full bg-black rounded-[14px] flex items-center justify-center">
-             <LogIn className="w-7 h-7 text-white" />
+            <DraftingCompass className="w-8 h-8 text-white" />
           </div>
         </div>
         

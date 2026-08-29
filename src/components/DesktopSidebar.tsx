@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Compass, UserCheck, Flame, Bookmark, Tv, Keyboard, Sparkles, Monitor } from 'lucide-react';
+import { Home, Compass, UserCheck, Flame, Bookmark, Tv, Keyboard, Sparkles, Monitor, DraftingCompass } from 'lucide-react';
 
 interface DesktopSidebarProps {
   activeTab: 'following' | 'foryou' | 'latest';
@@ -19,16 +19,16 @@ export const DesktopSidebar: React.FC<DesktopSidebarProps> = ({
   return (
     <aside className="w-64 bg-gray-950/90 backdrop-blur-xl border-r border-gray-800/80 p-5 flex flex-col justify-between hidden lg:flex select-none z-30 shrink-0">
       <div className="flex flex-col gap-6">
-        {/* TikTok Anime Logo */}
+        {/* Ani-Tok Anime Logo */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-pink-500 via-purple-600 to-cyan-400 p-0.5 shadow-xl flex items-center justify-center">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-pink-500 via-purple-600 to-cyan-400 p-[2px] shadow-xl flex items-center justify-center">
             <div className="w-full h-full bg-black rounded-[14px] flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-cyan-400 animate-pulse" />
+              <DraftingCompass className="w-5 h-5 text-white" />
             </div>
           </div>
           <div>
             <h1 className="font-black text-lg tracking-tight text-white flex items-center gap-1">
-              TikTok <span className="text-pink-500 text-xs px-1.5 py-0.5 rounded bg-pink-950/80 border border-pink-500/30">ANIME</span>
+              Ani-Tok <span className="text-pink-500 text-xs px-1.5 py-0.5 rounded bg-pink-950/80 border border-pink-500/30">ANIME</span>
             </h1>
             <p className="text-[10px] text-gray-400 font-medium">Short Stream & Prefetch</p>
           </div>

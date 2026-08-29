@@ -238,9 +238,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       {/* Tab Grid */}
       <div className="p-3">
         {activeTab === 'liked' && (
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 xl:grid-cols-6 gap-2">
             {likedAnimeList.length === 0 ? (
-              <div className="col-span-3 text-center py-12 text-zinc-500 text-xs">
+              <div className="col-span-full text-center py-12 text-zinc-500 text-xs">
                 No liked anime yet. Tap the heart on any video to like!
               </div>
             ) : (
@@ -251,7 +251,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                     onSelectAnime(anime);
                     onBackToFeed();
                   }}
-                  className="aspect-[3/4] relative rounded-xl overflow-hidden cursor-pointer group border border-zinc-800"
+                  className="aspect-[3/4] relative rounded-xl overflow-hidden cursor-pointer group border border-zinc-800 hover:border-zinc-700 transition-all"
                 >
                   <img src={anime.poster} alt={anime.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                   <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 flex items-center justify-center">
@@ -264,9 +264,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         )}
 
         {activeTab === 'history' && (
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 xl:grid-cols-6 gap-2">
             {historyList.length === 0 ? (
-              <div className="col-span-3 text-center py-12 text-zinc-500 text-xs">
+              <div className="col-span-full text-center py-12 text-zinc-500 text-xs">
                 No history items yet. Start watching some videos!
               </div>
             ) : (
@@ -279,7 +279,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                       onBackToFeed();
                     }
                   }}
-                  className="aspect-[3/4] relative rounded-xl overflow-hidden cursor-pointer group border border-zinc-800"
+                  className="aspect-[3/4] relative rounded-xl overflow-hidden cursor-pointer group border border-zinc-800 hover:border-zinc-700 transition-all"
                 >
                   <img src={item.anime?.poster} alt={item.anime?.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                   <div className="absolute inset-0 bg-black/40 group-hover:bg-black/25 flex flex-col justify-between p-1.5 text-left">

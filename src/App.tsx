@@ -48,8 +48,38 @@ interface TabFeedState {
 
 export default function App() {
   // Navigation & Tab state
-  const [activeTab, setActiveTab] = useState<TabType>('foryou');
-  const [currentNav, setCurrentNav] = useState<'home' | 'explore' | 'history' | 'profile'>('home');
+  const [activeTab, setActiveTab] = useState<TabType>(() => {
+    try {
+      const saved = sessionStorage.getItem('anitok_active_tab');
+      if (saved && ['following', 'foryou', 'latest', 'reels'].includes(saved)) {
+        return saved as TabType;
+      }
+    } catch {}
+    return 'foryou';
+  });
+
+  const [currentNav, setCurrentNav] = useState<'home' | 'explore' | 'history' | 'profile'>(() => {
+    try {
+      const saved = sessionStorage.getItem('anitok_current_nav');
+      if (saved && ['home', 'explore', 'history', 'profile'].includes(saved)) {
+        return saved as any;
+      }
+    } catch {}
+    return 'home';
+  });
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem('anitok_active_tab', activeTab);
+    } catch {}
+  }, [activeTab]);
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem('anitok_current_nav', currentNav);
+    } catch {}
+  }, [currentNav]);
+
   const [server, setServer] = useState<ServerType>('hd-2');
   const [isMuted, setIsMuted] = useState<boolean>(false);
 

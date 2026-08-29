@@ -288,7 +288,7 @@ export const SearchView: React.FC<SearchViewProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-zinc-950/98 backdrop-blur-2xl flex flex-col p-3 sm:p-4 pb-16 sm:pb-20 animate-fade-in text-zinc-200">
+    <div className="fixed inset-0 z-45 bg-zinc-950/98 backdrop-blur-2xl flex flex-col p-3 sm:p-4 pb-16 sm:pb-20 animate-fade-in text-zinc-200">
       <div className="max-w-7xl mx-auto w-full flex flex-col flex-1 min-h-0">
         {/* Search Header */}
         <div className="flex items-center gap-3 pt-2 pb-3 border-b border-zinc-800 shrink-0">

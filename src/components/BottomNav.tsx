@@ -25,7 +25,7 @@ export const BottomNav: React.FC<BottomNavProps> = React.memo(({
   userProfile
 }) => {
   return (
-    <nav className="absolute bottom-0 left-0 right-0 z-40 h-14 sm:h-15 bg-gradient-to-t from-black/95 via-black/80 to-black/20 backdrop-blur-md border-t border-white/10 px-2 sm:px-4 flex items-center justify-around text-white pointer-events-auto select-none">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 h-14 sm:h-15 bg-gradient-to-t from-black/95 via-black/80 to-black/20 backdrop-blur-md border-t border-zinc-800/80 px-2 sm:px-4 flex items-center justify-around text-white pointer-events-auto select-none">
       {/* Home */}
       <button
         id="nav-home"
@@ -73,8 +73,8 @@ export const BottomNav: React.FC<BottomNavProps> = React.memo(({
               className="absolute inset-[-150%] bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 animate-spin" 
               style={{ animationDuration: '3s' }} 
             />
-            <div className="absolute inset-[2px] bg-black rounded-[6px] z-10 flex items-center justify-center">
-                <Plus className="w-4 h-4 text-white stroke-[3]" />
+            <div className="absolute inset-[2px] bg-white rounded-[6px] z-10 flex items-center justify-center">
+                <Plus className="w-4 h-4 text-black stroke-[3]" />
             </div>
           </>
         )}

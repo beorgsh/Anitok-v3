@@ -50,13 +50,13 @@ export const InstallPWAModal: React.FC<InstallPWAModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/85 backdrop-blur-md animate-fade-in">
       <div 
-        className="w-full sm:max-w-md bg-zinc-900/95 border border-white/10 rounded-t-2xl sm:rounded-2xl p-6 text-white shadow-2xl relative"
+        className="w-full sm:max-w-md bg-zinc-900 border border-zinc-800 rounded-t-2xl sm:rounded-2xl p-6 text-white shadow-2xl relative"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-zinc-400 hover:text-white transition-colors"
+          className="absolute top-4 right-4 p-2 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors"
           aria-label="Close"
         >
           <X className="w-5 h-5" />
@@ -122,7 +122,7 @@ export const InstallPWAModal: React.FC<InstallPWAModalProps> = ({
           </div>
         ) : isIOS ? (
           <div className="space-y-4">
-            <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-xs text-zinc-300 space-y-2.5">
+            <div className="bg-zinc-950/60 border border-zinc-800 rounded-xl p-4 text-xs text-zinc-300 space-y-2.5">
               <p className="font-semibold text-white">To install on iOS Safari:</p>
               <div className="flex items-center gap-2.5">
                 <Share className="w-4 h-4 text-pink-400 shrink-0" />
@@ -142,7 +142,7 @@ export const InstallPWAModal: React.FC<InstallPWAModalProps> = ({
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-xs text-zinc-300 space-y-2">
+            <div className="bg-zinc-950/60 border border-zinc-800 rounded-xl p-4 text-xs text-zinc-300 space-y-2">
               <p className="font-semibold text-white">Manual Install Instructions:</p>
               <p>In Chrome/Edge menu (⋮ or ⋯ top-right):</p>
               <p className="text-pink-300 font-medium">Select &quot;Install Ani-Tok&quot; or &quot;Save & Share&quot; &rarr; &quot;Install page as app&quot;</p>

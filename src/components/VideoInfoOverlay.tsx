@@ -202,7 +202,7 @@ export const VideoInfoOverlay: React.FC<VideoInfoOverlayProps> = React.memo(({
             )}
 
             {anime.episodes && (
-              <span className="bg-white/15 backdrop-blur-md text-white/90 border border-white/10 text-[9px] sm:text-[10px] px-2 py-0.5 rounded-full font-bold flex items-center gap-1 shadow-xs">
+              <span className="bg-zinc-900/80 backdrop-blur-md text-zinc-200 border border-zinc-800 text-[9px] sm:text-[10px] px-2 py-0.5 rounded-full font-bold flex items-center gap-1 shadow-xs">
                 EP {anime.episodes}
               </span>
             )}

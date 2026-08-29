@@ -91,7 +91,7 @@ const EpisodeThumbnail: React.FC<EpisodeThumbnailProps> = ({
 
         {/* Pill Badge for Duration & Rating */}
         <div className="absolute bottom-2 left-2 flex items-center gap-1.5 z-10">
-          <span className="px-2 py-0.5 rounded-md bg-black/80 text-[10px] font-bold text-white font-mono border border-white/10">
+          <span className="px-2 py-0.5 rounded-md bg-black/80 text-[10px] font-bold text-white font-mono border border-zinc-800">
             EP {ep}
           </span>
           {duration && (

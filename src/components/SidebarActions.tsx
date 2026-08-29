@@ -135,7 +135,7 @@ export const SidebarActions: React.FC<SidebarActionsProps> = React.memo(({
             className={`w-13 h-6 sm:w-14 sm:h-6.5 rounded-full p-0.5 transition-all duration-300 relative flex items-center shadow-xl border backdrop-blur-md cursor-pointer ${
               isDub
                 ? 'bg-pink-600/90 border-pink-400/80 shadow-pink-500/30'
-                : 'bg-black/70 border-white/30 hover:border-white/50'
+                : 'bg-black/80 border-zinc-700 hover:border-zinc-500'
             }`}
             title={`Switch to ${isDub ? 'Original Japanese (SUB)' : 'English Dub (DUB)'}`}
           >
@@ -364,7 +364,7 @@ export const SidebarActions: React.FC<SidebarActionsProps> = React.memo(({
                 ? 'border-2 border-pink-500 ring-2 ring-pink-500 ring-offset-1 ring-offset-black shadow-[0_0_15px_rgba(236,72,153,0.8)]'
                 : skipState?.isSkippable
                 ? 'border-2 border-transparent'
-                : 'border-2 border-white/80'
+                : 'border-2 border-zinc-700/80'
             }`}
             style={{ animationDuration: '4s' }}
           >

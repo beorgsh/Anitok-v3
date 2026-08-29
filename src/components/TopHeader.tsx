@@ -92,7 +92,7 @@ export const TopHeader = forwardRef<TopHeaderHandle, TopHeaderProps>(({
   }, [activeTab]);
 
   return (
-    <header className="absolute top-0 left-0 right-0 z-40 px-2.5 sm:px-4 pt-3 sm:pt-4 pb-2 flex items-center justify-between text-white pointer-events-auto select-none">
+    <header className="fixed top-0 left-0 right-0 z-50 px-2.5 sm:px-4 pt-3 sm:pt-4 pb-2 flex items-center justify-between text-white pointer-events-auto select-none">
       {/* Left spacer to keep center tabs balanced */}
       <div className="w-8 h-8 pointer-events-none" />
 
@@ -160,7 +160,7 @@ export const TopHeader = forwardRef<TopHeaderHandle, TopHeaderProps>(({
       <button
         id="btn-top-search"
         onClick={onOpenSearch}
-        className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/40 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-black/60 active:scale-90 transition-all shadow-lg"
+        className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/50 backdrop-blur-md border border-zinc-800 flex items-center justify-center text-zinc-100 hover:bg-black/70 hover:border-zinc-700 active:scale-90 transition-all shadow-lg"
         title="Search Anime"
       >
         <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4" />

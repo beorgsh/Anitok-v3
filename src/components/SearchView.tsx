@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, X, Flame, Star, Play, Loader2 } from 'lucide-react';
 import { AnimeItem, AnimeEpisodeMetadata, getLatestEpisode } from '../types/anime';
 import { searchAnimeOnApi, fetchAnimeByGenreOnApi, fetchAnimeEpisodesMetadata } from '../services/animeApi';
+import { BottomNav } from './BottomNav';
 
 interface SearchViewProps {
   allAnime: AnimeItem[];
@@ -9,6 +10,11 @@ interface SearchViewProps {
   onClose: () => void;
   onSelectAnime: (anime: AnimeItem, episode?: number) => void;
   initialGenre?: string | null;
+  currentNav?: 'home' | 'explore' | 'history' | 'profile';
+  onChangeNav?: (nav: 'home' | 'explore' | 'history' | 'profile') => void;
+  onOpenUpload?: () => void;
+  isAuthenticated?: boolean;
+  userProfile?: any;
 }
 
 const GENRE_TAGS = [
@@ -45,6 +51,11 @@ export const SearchView: React.FC<SearchViewProps> = ({
   onClose,
   onSelectAnime,
   initialGenre = null,
+  currentNav = 'explore',
+  onChangeNav,
+  onOpenUpload,
+  isAuthenticated,
+  userProfile,
 }) => {
   const [query, setQuery] = useState<string>('');
   const [selectedGenre, setSelectedGenre] = useState<string | null>(initialGenre);
@@ -236,7 +247,7 @@ export const SearchView: React.FC<SearchViewProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-zinc-950/98 backdrop-blur-2xl flex flex-col p-4 animate-fade-in text-zinc-200">
+    <div className="fixed inset-0 z-50 bg-zinc-950/98 backdrop-blur-2xl flex flex-col p-4 pb-16 sm:pb-20 animate-fade-in text-zinc-200">
       {/* Search Header */}
       <div className="flex items-center gap-3 pt-2 pb-4 border-b border-zinc-800">
         <div className="flex-1 relative flex items-center">
@@ -598,6 +609,22 @@ export const SearchView: React.FC<SearchViewProps> = ({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Bottom Navigation Bar */}
+      {onChangeNav && (
+        <BottomNav
+          currentNav={currentNav}
+          onChangeNav={(nav) => {
+            if (nav !== 'explore') {
+              onClose();
+            }
+            onChangeNav(nav);
+          }}
+          onOpenUpload={onOpenUpload || (() => {})}
+          isAuthenticated={isAuthenticated}
+          userProfile={userProfile}
+        />
       )}
     </div>
   );

@@ -372,6 +372,62 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
     return `${m}:${s < 10 ? '0' : ''}${s}`;
   };
 
+  // Skip Intro / Outro helper logic
+  const introData = streamData?.intro;
+  const outroData = streamData?.outro;
+
+  const hasIntroData = !!(
+    introData &&
+    typeof introData.start === 'number' &&
+    typeof introData.end === 'number' &&
+    introData.end > introData.start
+  );
+
+  const hasOutroData = !!(
+    outroData &&
+    typeof outroData.start === 'number' &&
+    typeof outroData.end === 'number' &&
+    outroData.end > outroData.start
+  );
+
+  const isCurrentIntro = hasIntroData && currentTime >= (introData?.start ?? 0) && currentTime < (introData?.end ?? 0);
+  const isCurrentOutro = hasOutroData && currentTime >= (outroData?.start ?? 0) && currentTime < (outroData?.end ?? 0);
+
+  const handleSkipIntroOrOutro = useCallback((e?: React.SyntheticEvent) => {
+    if (e) e.stopPropagation();
+    const intro = streamData?.intro;
+    const outro = streamData?.outro;
+
+    if (isCurrentIntro && intro) {
+      if (videoRef.current) {
+        videoRef.current.currentTime = intro.end;
+        setCurrentTime(intro.end);
+        if (duration > 0) {
+          const newProg = (intro.end / duration) * 100;
+          setProgress(newProg);
+          if (onProgressUpdate) {
+            onProgressUpdate(newProg, intro.end, duration, handleSeek);
+          }
+        }
+        updateSubtitle(intro.end);
+      }
+    } else if (isCurrentOutro && outro) {
+      if (videoRef.current) {
+        videoRef.current.currentTime = outro.end;
+        setCurrentTime(outro.end);
+        if (duration > 0) {
+          const newProg = (outro.end / duration) * 100;
+          setProgress(newProg);
+          if (onProgressUpdate) {
+            onProgressUpdate(newProg, outro.end, duration, handleSeek);
+          }
+        }
+        updateSubtitle(outro.end);
+      }
+    }
+    resetControlsTimeout();
+  }, [isCurrentIntro, isCurrentOutro, streamData, duration, onProgressUpdate, resetControlsTimeout]);
+
   // Subtitle sync offset (in seconds)
   const [subtitleOffset, setSubtitleOffset] = useState<number>(propSubtitleOffset);
 
@@ -1976,18 +2032,14 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
 
             {/* Right Top Buttons: EP List, Debugger (if enabled), Audio & Subtitle Settings */}
             <div className="flex items-center gap-2">
-              {/* Skip Next Video Button */}
-              {onNextVideo && (
+              {/* Skip Intro / Outro Button: ONLY shown if skip timestamps exist for the anime episode and video is currently in the skip timestamp range */}
+              {(isCurrentIntro || isCurrentOutro) && (
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onNextVideo();
-                    resetControlsTimeout();
-                  }}
-                  className="px-3 py-1.5 rounded-full bg-pink-600/90 hover:bg-pink-500 active:scale-95 border border-pink-400/40 backdrop-blur-md flex items-center gap-1.5 text-white text-xs font-bold shadow-lg transition-all cursor-pointer"
-                  title="Skip to Next Anime Video"
+                  onClick={handleSkipIntroOrOutro}
+                  className="px-3.5 py-1.5 rounded-full bg-pink-600 hover:bg-pink-500 active:scale-95 border border-pink-400/50 backdrop-blur-md flex items-center gap-1.5 text-white text-xs font-bold shadow-lg transition-all cursor-pointer animate-pulse"
+                  title={isCurrentIntro ? 'Skip Intro' : 'Skip Outro'}
                 >
-                  <span>Skip Video</span>
+                  <span>{isCurrentIntro ? 'Skip Intro' : 'Skip Outro'}</span>
                   <SkipForward className="w-3.5 h-3.5 fill-white" />
                 </button>
               )}
@@ -2192,6 +2244,19 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
               {formatTime(isReels ? 30 : duration)}
             </span>
           </div>
+
+          {/* Floating Skip Pill in Fullscreen when playback is within skip timestamps */}
+          {isFullscreen && (isCurrentIntro || isCurrentOutro) && (
+            <div className="absolute bottom-20 right-6 z-40 pointer-events-auto">
+              <button
+                onClick={handleSkipIntroOrOutro}
+                className="px-4 py-2 rounded-full bg-pink-600 hover:bg-pink-500 active:scale-95 border border-white/30 backdrop-blur-md flex items-center gap-2 text-white text-xs font-black shadow-[0_4px_20px_rgba(236,72,153,0.7)] transition-all cursor-pointer animate-bounce"
+              >
+                <span>{isCurrentIntro ? 'SKIP INTRO' : 'SKIP OUTRO'}</span>
+                <SkipForward className="w-4 h-4 fill-white" />
+              </button>
+            </div>
+          )}
         </div>
       )}
 

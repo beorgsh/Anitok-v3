@@ -1182,6 +1182,25 @@ export default function App() {
                   }}
                   onSelectAnime={handleWatchFull}
                   initialGenre={searchInitialGenre}
+                  currentNav={currentNav}
+                  onChangeNav={(nav) => {
+                    if ((nav === 'profile' || nav === 'history') && !isAuthenticated) {
+                      setIsAuthModalOpen(true);
+                    } else {
+                      setCurrentNav(nav);
+                    }
+                  }}
+                  onOpenUpload={() => {
+                    if (!isAuthenticated) {
+                      setIsAuthModalOpen(true);
+                    } else if (!userProfile) {
+                      setIsProfileSetupOpen(true);
+                    } else {
+                      setIsAccountModalOpen(true);
+                    }
+                  }}
+                  isAuthenticated={isAuthenticated}
+                  userProfile={userProfile}
                 />
               ) : currentNav === 'history' ? (
                 <HistoryView
@@ -1584,6 +1603,27 @@ export default function App() {
           setIsSearchOpen(false);
         }}
         initialGenre={searchInitialGenre}
+        currentNav={currentNav}
+        onChangeNav={(nav) => {
+          setIsSearchOpen(false);
+          if ((nav === 'profile' || nav === 'history') && !isAuthenticated) {
+            setIsAuthModalOpen(true);
+          } else {
+            setCurrentNav(nav);
+          }
+        }}
+        onOpenUpload={() => {
+          setIsSearchOpen(false);
+          if (!isAuthenticated) {
+            setIsAuthModalOpen(true);
+          } else if (!userProfile) {
+            setIsProfileSetupOpen(true);
+          } else {
+            setIsAccountModalOpen(true);
+          }
+        }}
+        isAuthenticated={isAuthenticated}
+        userProfile={userProfile}
         onSelectAnime={(anime, episode) => {
           registerAnimeMetadata([anime]);
           if (typeof episode === 'number') {

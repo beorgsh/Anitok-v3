@@ -314,6 +314,77 @@ export default function App() {
   const [isSubSettingsOpen, setIsSubSettingsOpen] = useState<boolean>(false);
   const [commits, setCommits] = useState<any[]>([]);
   const [loadingCommits, setLoadingCommits] = useState<boolean>(true);
+  const [activeRepoName, setActiveRepoName] = useState<string>("beorgsh/Anitok-v3");
+  const [isRepoPrivateOr404, setIsRepoPrivateOr404] = useState<boolean>(false);
+  const [githubPatInput, setGithubPatInput] = useState<string>(() => localStorage.getItem('github_pat') || '');
+  const [showPatInput, setShowPatInput] = useState<boolean>(false);
+
+  const fetchCommits = async (patOverride?: string) => {
+    setLoadingCommits(true);
+    setIsRepoPrivateOr404(false);
+    
+    const pat = patOverride !== undefined ? patOverride : (localStorage.getItem('github_pat') || '');
+    const headers: Record<string, string> = {};
+    if (pat.trim()) {
+      headers['Authorization'] = `token ${pat.trim()}`;
+    }
+
+    try {
+      let targetRepo = "beorgsh/Anitok-v3";
+      setActiveRepoName(targetRepo);
+
+      let res = await fetch(`https://api.github.com/repos/${targetRepo}/commits?per_page=5`, { headers });
+      
+      if (!res.ok) {
+        setIsRepoPrivateOr404(true);
+        // Fallback to latest pushed public repositories if Anitok-v3 is private/404
+        const reposRes = await fetch("https://api.github.com/users/beorgsh/repos?sort=pushed&per_page=10", { headers });
+        if (reposRes.ok) {
+          const reposData = await reposRes.json();
+          if (Array.isArray(reposData)) {
+            const match = reposData.find((r: any) => 
+              r.name && (r.name.toLowerCase().includes('anitok') || r.name.toLowerCase().includes('ani'))
+            );
+            if (match && match.full_name) {
+              targetRepo = match.full_name;
+              setActiveRepoName(targetRepo);
+              res = await fetch(`https://api.github.com/repos/${targetRepo}/commits?per_page=5`, { headers });
+            }
+          }
+        }
+      }
+
+      if (!res.ok) {
+        targetRepo = "beorgsh/Anitok-Setup";
+        setActiveRepoName(targetRepo);
+        res = await fetch(`https://api.github.com/repos/${targetRepo}/commits?per_page=5`, { headers });
+      }
+
+      if (!res.ok) {
+        targetRepo = "beorgsh/Anitok-v1.0.2";
+        setActiveRepoName(targetRepo);
+        res = await fetch(`https://api.github.com/repos/${targetRepo}/commits?per_page=5`, { headers });
+      }
+
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          setCommits(data);
+          const latestSha = data[0].sha;
+          const lastSeenSha = localStorage.getItem('last_seen_commit_sha');
+
+          // Pop up modal every time a NEW commit SHA is pushed!
+          if (lastSeenSha !== latestSha) {
+            setShowUpdatesModal(true);
+          }
+        }
+      }
+    } catch {
+      // Silently handle offline / CORS / rate-limit without logging error
+    } finally {
+      setLoadingCommits(false);
+    }
+  };
 
   useEffect(() => {
     // Nuke service workers to fix cache issues
@@ -324,56 +395,20 @@ export default function App() {
         }
       });
     }
-    const fetchCommits = async () => {
-      try {
-        let repoToFetch = "beorgsh/Anitok-v3";
-        let res = await fetch(`https://api.github.com/repos/${repoToFetch}/commits?per_page=5`);
-        
-        if (!res.ok) {
-          // Fallback to latest pushed repositories if Anitok-v3 is private or uninitialised
-          const reposRes = await fetch("https://api.github.com/users/beorgsh/repos?sort=pushed&per_page=10");
-          if (reposRes.ok) {
-            const reposData = await reposRes.json();
-            if (Array.isArray(reposData)) {
-              const match = reposData.find((r: any) => 
-                r.name && (r.name.toLowerCase().includes('anitok') || r.name.toLowerCase().includes('ani'))
-              );
-              if (match && match.full_name) {
-                res = await fetch(`https://api.github.com/repos/${match.full_name}/commits?per_page=5`);
-              }
-            }
-          }
-        }
-
-        if (!res.ok) {
-          res = await fetch("https://api.github.com/repos/beorgsh/Anitok-Setup/commits?per_page=5");
-        }
-        if (!res.ok) {
-          res = await fetch("https://api.github.com/repos/beorgsh/Anitok-v1.0.2/commits?per_page=5");
-        }
-
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) {
-            setCommits(data);
-            const latestSha = data[0].sha;
-            const lastSeenSha = localStorage.getItem('last_seen_commit_sha');
-
-            // Pop up modal every time a NEW commit SHA is pushed!
-            if (lastSeenSha !== latestSha) {
-              setShowUpdatesModal(true);
-            }
-          }
-        }
-      } catch {
-        // Silently handle offline / CORS / rate-limit without logging error
-      } finally {
-        setLoadingCommits(false);
-      }
-    };
 
     fetchCommits();
   }, []);
+
+  const handleSavePat = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (githubPatInput.trim()) {
+      localStorage.setItem('github_pat', githubPatInput.trim());
+    } else {
+      localStorage.removeItem('github_pat');
+    }
+    setShowPatInput(false);
+    fetchCommits(githubPatInput.trim());
+  };
 
   const handleDismissUpdatesModal = () => {
     setShowUpdatesModal(false);
@@ -1479,7 +1514,7 @@ export default function App() {
                                         }
                                       }}
                                       onWatchFull={() => handleWatchFull(anime)}
-                                      onOpenSettings={() => setIsShareOpen(true)}
+                                      onOpenSettings={() => setIsSubSettingsOpen(true)}
                                       onNextEp={() =>
                                         setEpMap((prev) => {
                                           const maxEp = getLatestEpisode(anime);
@@ -1772,22 +1807,85 @@ export default function App() {
             {/* Terminal Console Content */}
             <div className="p-5 overflow-y-auto space-y-4 text-xs max-h-[50vh] text-emerald-400 font-mono">
               <div className="space-y-1">
-                <div className="text-zinc-500">Last login: {new Date().toLocaleDateString()} on ttys002</div>
+                <div className="text-zinc-500 flex items-center justify-between">
+                  <span>Last login: {new Date().toLocaleDateString()} on ttys002</span>
+                  <button 
+                    onClick={() => setShowPatInput(!showPatInput)}
+                    className="text-[10px] text-zinc-400 hover:text-emerald-400 underline cursor-pointer"
+                  >
+                    {showPatInput ? 'Cancel PAT' : 'Configure PAT'}
+                  </button>
+                </div>
                 <div className="flex items-center gap-1.5">
                   <span className="text-pink-500">anitok@system:~$</span>
-                  <span className="text-white">git log -n 5 --oneline --graph</span>
+                  <span className="text-white">git log -n 5 --oneline --repo={activeRepoName}</span>
                 </div>
               </div>
+
+              {/* Private Repo or PAT Config Form */}
+              {showPatInput ? (
+                <form onSubmit={handleSavePat} className="p-3 bg-zinc-950 border border-emerald-500/30 rounded-lg space-y-2">
+                  <div className="text-[11px] text-amber-400 font-semibold">🔑 GitHub Personal Access Token (PAT)</div>
+                  <div className="text-[10px] text-zinc-400 leading-normal">
+                    If <span className="text-emerald-400">beorgsh/Anitok-v3</span> is a private repo, enter a GitHub token with <code className="text-pink-400">repo</code> scope to fetch live commits.
+                  </div>
+                  <input 
+                    type="password"
+                    value={githubPatInput}
+                    onChange={(e) => setGithubPatInput(e.target.value)}
+                    placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+                    className="w-full px-2.5 py-1.5 bg-black border border-zinc-800 rounded text-xs text-emerald-300 focus:outline-none focus:border-emerald-500 font-mono"
+                  />
+                  <div className="flex items-center gap-2 pt-1">
+                    <button
+                      type="submit"
+                      className="px-3 py-1 bg-emerald-500 text-black font-bold text-[11px] rounded hover:bg-emerald-400 cursor-pointer"
+                    >
+                      Save & Fetch Commits
+                    </button>
+                    {localStorage.getItem('github_pat') && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setGithubPatInput('');
+                          localStorage.removeItem('github_pat');
+                          setShowPatInput(false);
+                          fetchCommits('');
+                        }}
+                        className="px-2.5 py-1 bg-red-500/20 text-red-400 font-bold text-[11px] rounded hover:bg-red-500/30 cursor-pointer"
+                      >
+                        Clear Token
+                      </button>
+                    )}
+                  </div>
+                </form>
+              ) : isRepoPrivateOr404 ? (
+                <div className="p-2.5 bg-amber-950/20 border border-amber-500/30 rounded-lg text-[11px] text-amber-300/90 leading-relaxed space-y-1">
+                  <div className="font-bold flex items-center justify-between text-amber-400">
+                    <span>⚠️ Repo 'beorgsh/Anitok-v3' is private or not found</span>
+                    <button 
+                      onClick={() => setShowPatInput(true)} 
+                      className="text-[10px] bg-amber-500/20 px-2 py-0.5 rounded text-amber-300 hover:bg-amber-500/30 font-mono cursor-pointer"
+                    >
+                      + Add Token
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-zinc-400">
+                    Showing commits from active backup repository: <span className="text-emerald-400 font-bold">{activeRepoName}</span>
+                  </p>
+                </div>
+              ) : null}
 
               {loadingCommits ? (
                 <div className="flex flex-col items-center justify-center py-10 gap-3 border border-zinc-900 bg-zinc-950/50 rounded-lg">
                   <div className="w-5 h-5 border-2 border-emerald-500/20 border-t-emerald-400 rounded-full animate-spin" />
-                  <span className="text-[10px] text-zinc-500">fetch_origin: querying github api...</span>
+                  <span className="text-[10px] text-zinc-500">fetch_origin: querying github api for {activeRepoName}...</span>
                 </div>
               ) : commits.length > 0 ? (
                 <div className="space-y-3.5">
-                  <div className="text-zinc-500 text-[10px] uppercase tracking-wider font-semibold border-b border-zinc-900 pb-1">
-                    * branch main (beorgsh/Anitok-v3)
+                  <div className="text-zinc-500 text-[10px] uppercase tracking-wider font-semibold border-b border-zinc-900 pb-1 flex items-center justify-between">
+                    <span>* branch main ({activeRepoName})</span>
+                    <span className="text-[9px] text-emerald-500/80">● connected</span>
                   </div>
                   {commits.map((c, idx) => {
                     const message = c.commit?.message || "Code update";

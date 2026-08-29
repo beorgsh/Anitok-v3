@@ -1742,6 +1742,13 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
           </div>
         )}
 
+        {/* Pause Triangle Indicator (No BG, No Border, ONLY drop-shadow, ONLY outside fullscreen mode) */}
+        {!isFullscreen && (isUserPaused || !isPlaying) && !loading && !error && !showAdOverlay && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30 animate-fade-in">
+            <Play className="w-16 h-16 sm:w-20 sm:h-20 text-white fill-white translate-x-1 drop-shadow-[0_4px_24px_rgba(0,0,0,0.95)]" />
+          </div>
+        )}
+
         {/* 2X Playback Speed HUD Overlay when holding */}
         {isHolding2x && (
           <div className="absolute top-14 sm:top-18 left-1/2 -translate-x-1/2 z-45 flex items-center justify-center w-11 h-11 rounded-full bg-black/80 backdrop-blur-md text-white border border-zinc-700 text-sm font-black shadow-2xl tracking-wider select-none animate-pulse pointer-events-none">

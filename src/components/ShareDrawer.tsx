@@ -435,28 +435,6 @@ export const ShareDrawer: React.FC<ShareDrawerProps> = ({
               />
             </button>
           </div>
-
-          {/* View Push Updates Modal */}
-          {onOpenUpdates && (
-            <div className="py-3 flex items-center justify-between border-t border-zinc-800/80">
-              <div className="flex items-center gap-2">
-                <Terminal className="w-4 h-4 text-emerald-400" />
-                <div>
-                  <div className="text-xs font-semibold text-zinc-200">App Version & Push Logs</div>
-                  <div className="text-[10px] text-zinc-400">View latest GitHub commits and update terminal</div>
-                </div>
-              </div>
-              <button
-                onClick={() => {
-                  onClose();
-                  onOpenUpdates();
-                }}
-                className="px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold text-xs transition-colors cursor-pointer"
-              >
-                View Log
-              </button>
-            </div>
-          )}
         </div>
 
         {/* Share Section Title */}

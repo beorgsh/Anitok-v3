@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { X, Sliders, Type, Palette, Info, Check, Sparkles, MoveVertical, Globe, Settings2 } from 'lucide-react';
 import { SubtitleSettings, AnimeItem } from '../types/anime';
 
@@ -52,7 +53,7 @@ export const SubtitleSettingsModal: React.FC<SubtitleSettingsModalProps> = ({
     }
   };
 
-  return (
+  const modalContent = (
     <div
       className="fixed inset-0 z-55 flex flex-col justify-end bg-black/80 backdrop-blur-xs text-zinc-100 select-none animate-fade-in"
       onClick={onClose}
@@ -296,4 +297,12 @@ export const SubtitleSettingsModal: React.FC<SubtitleSettingsModalProps> = ({
       </div>
     </div>
   );
+
+  const mountTarget =
+    (typeof document !== 'undefined' && document.fullscreenElement) ||
+    (typeof document !== 'undefined' && document.body) ||
+    null;
+  if (!mountTarget) return modalContent;
+
+  return createPortal(modalContent, mountTarget);
 };

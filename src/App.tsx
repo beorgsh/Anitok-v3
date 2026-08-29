@@ -399,7 +399,7 @@ export default function App() {
     // Disable horizontal tab swipe if fullscreen is active or if user clicked an interactive element
     if (
       (typeof document !== 'undefined' && document.fullscreenElement) ||
-      (e.target as HTMLElement).closest('button, a, input, [role="button"], .interactive-control, [id^="video-player-"]')
+      (e.target as HTMLElement).closest('button, a, input, select, textarea, [role="button"], .interactive-control, .no-swipe')
     ) {
       return;
     }

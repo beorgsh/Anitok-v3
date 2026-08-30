@@ -135,6 +135,7 @@ export interface SubtitleSettings {
   color: 'white' | 'yellow' | 'cyan';
   syncOffset: number; // in seconds (-5 to +5)
   showTerminalIcon?: boolean; // toggle in modals more for showing the terminal icon in player
+  autoNext?: boolean; // toggle in more settings for auto proceeding to next video
 }
 
 export interface WatchHistoryItem {

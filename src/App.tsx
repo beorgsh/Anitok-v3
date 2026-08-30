@@ -150,6 +150,8 @@ export default function App() {
       bgOpacity: 85,
       color: 'white',
       syncOffset: 0,
+      showTerminalIcon: false,
+      autoNext: false,
     };
     try {
       const saved = localStorage.getItem('anime_subtitle_settings');
@@ -992,38 +994,53 @@ export default function App() {
   const scrollRafRef = useRef<Record<string, number | null>>({});
   const isUnfullscreeningRef = useRef<boolean>(false);
 
-  // Lock feed container position during fullscreen changes to prevent accidental nexting
+  // Lock feed container position during fullscreen changes, window resize, and initial mount
   useEffect(() => {
-    const handleFsChange = () => {
-      isUnfullscreeningRef.current = true;
-
+    const realignFeedPositions = () => {
+      if (typeof window !== 'undefined') {
+        window.scrollTo(0, 0);
+        document.body.scrollTop = 0;
+        document.documentElement.scrollTop = 0;
+      }
       TABS.forEach((t) => {
         const container = feedContainerRefs.current[t];
-        const activeIdx = tabFeeds[t]?.activeIndex ?? 0;
+        const activeIdx = tabFeedsRef.current[t]?.activeIndex ?? 0;
         if (container && container.clientHeight > 0) {
           container.scrollTop = activeIdx * container.clientHeight;
         }
       });
+    };
+
+    const handleFsChange = () => {
+      isUnfullscreeningRef.current = true;
+      realignFeedPositions();
 
       setTimeout(() => {
         isUnfullscreeningRef.current = false;
-        TABS.forEach((t) => {
-          const container = feedContainerRefs.current[t];
-          const activeIdx = tabFeeds[t]?.activeIndex ?? 0;
-          if (container && container.clientHeight > 0) {
-            container.scrollTop = activeIdx * container.clientHeight;
-          }
-        });
-      }, 500);
+        realignFeedPositions();
+      }, 350);
     };
+
+    const handleWindowResize = () => {
+      realignFeedPositions();
+    };
+
+    // Initial mount alignment
+    realignFeedPositions();
+    const timer = setTimeout(realignFeedPositions, 100);
 
     document.addEventListener('fullscreenchange', handleFsChange);
     document.addEventListener('webkitfullscreenchange', handleFsChange);
+    window.addEventListener('resize', handleWindowResize);
+    window.addEventListener('orientationchange', handleWindowResize);
     return () => {
+      clearTimeout(timer);
       document.removeEventListener('fullscreenchange', handleFsChange);
       document.removeEventListener('webkitfullscreenchange', handleFsChange);
+      window.removeEventListener('resize', handleWindowResize);
+      window.removeEventListener('orientationchange', handleWindowResize);
     };
-  }, [tabFeeds]);
+  }, []);
 
   const handleFeedScrollForTab = (tab: TabType) => {
     const isFs = typeof document !== 'undefined' && !!(document.fullscreenElement || (document as any).webkitFullscreenElement);
@@ -1257,7 +1274,7 @@ export default function App() {
   const activeTabIndex = TABS.indexOf(activeTab);
 
   return (
-    <div className="w-screen h-[100dvh] bg-black text-white flex flex-col font-sans overflow-hidden select-none">
+    <div className="fixed inset-0 w-full h-full bg-black text-white flex flex-col font-sans overflow-hidden select-none">
       {/* Main Container Layout */}
       <div className="flex-1 flex overflow-hidden relative w-full h-full">
         {/* Center Video Feed Stage */}
@@ -1401,7 +1418,7 @@ export default function App() {
                                 feedContainerRefs.current[tab] = el;
                               }}
                               onScroll={() => handleFeedScrollForTab(tab)}
-                              className="w-full h-full overflow-y-scroll snap-y snap-mandatory scroll-smooth overscroll-contain no-scrollbar relative"
+                              className="w-full h-full overflow-y-scroll snap-y snap-mandatory overscroll-contain no-scrollbar relative"
                             >
                               {feed.items.map((anime, index) => {
                                 const isTabActive = index === feed.activeIndex;
@@ -1480,13 +1497,15 @@ export default function App() {
                                          });
                                        }}
                                       onVideoEnd={() => {
-                                        const container = feedContainerRefs.current[tab];
-                                        if (index < feed.items.length - 1 && container) {
-                                          const nextIdx = index + 1;
-                                          container.scrollTo({
-                                            top: nextIdx * container.clientHeight,
-                                            behavior: 'smooth',
-                                          });
+                                        if (subtitleSettings.autoNext) {
+                                          const container = feedContainerRefs.current[tab];
+                                          if (index < feed.items.length - 1 && container) {
+                                            const nextIdx = index + 1;
+                                            container.scrollTo({
+                                              top: nextIdx * container.clientHeight,
+                                              behavior: 'smooth',
+                                            });
+                                          }
                                         }
                                       }}
                                       onNextVideo={() => {

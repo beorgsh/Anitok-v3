@@ -1,6 +1,6 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { X, Sliders, Type, Palette, Info, Check, Sparkles, MoveVertical, Globe, Settings2 } from 'lucide-react';
+import { X, Sliders, Type, Palette, Info, Check, Sparkles, MoveVertical, Globe, Settings2, FastForward } from 'lucide-react';
 import { SubtitleSettings, AnimeItem } from '../types/anime';
 
 interface SubtitleSettingsModalProps {
@@ -219,7 +219,7 @@ export const SubtitleSettingsModal: React.FC<SubtitleSettingsModalProps> = ({
             </div>
 
             {/* Subtitle Sync Offset Controls */}
-            <div className="flex items-center justify-between bg-zinc-950/60 p-3 rounded-2xl border border-zinc-850">
+            <div className="flex items-center justify-between bg-zinc-950/60 p-3 rounded-2xl border border-white/20">
               <div className="flex items-center gap-1.5 text-xs text-zinc-300">
                 <Info className="w-4 h-4 text-zinc-400" />
                 <span>Sync Offset:</span>
@@ -236,14 +236,14 @@ export const SubtitleSettingsModal: React.FC<SubtitleSettingsModalProps> = ({
                       syncOffset: Math.max((subtitleSettings.syncOffset || 0) - 0.5, -5),
                     })
                   }
-                  className="px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-750 text-zinc-300 font-bold text-xs"
+                  className="px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-750 text-zinc-300 font-bold text-xs border border-white/10"
                 >
                   -0.5s
                 </button>
                 {subtitleSettings.syncOffset !== 0 && (
                   <button
                     onClick={() => onUpdateSubtitleSettings({ syncOffset: 0 })}
-                    className="px-2 py-1 rounded-lg bg-zinc-805 hover:bg-zinc-750 text-zinc-400 font-bold text-xs"
+                    className="px-2 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-750 text-zinc-400 font-bold text-xs border border-white/10"
                   >
                     Reset
                   </button>
@@ -254,7 +254,7 @@ export const SubtitleSettingsModal: React.FC<SubtitleSettingsModalProps> = ({
                       syncOffset: Math.min((subtitleSettings.syncOffset || 0) + 0.5, 5),
                     })
                   }
-                  className="px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-750 text-zinc-300 font-bold text-xs"
+                  className="px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-750 text-zinc-300 font-bold text-xs border border-white/10"
                 >
                   +0.5s
                 </button>
@@ -263,9 +263,39 @@ export const SubtitleSettingsModal: React.FC<SubtitleSettingsModalProps> = ({
           </div>
         )}
 
+        {/* Auto Next Video Option */}
+        <div className="py-3 flex items-center justify-between border-t border-white/20 mt-3">
+          <div className="flex items-center gap-2">
+            <FastForward className="w-4 h-4 text-cyan-400" />
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-zinc-200">Auto Next Video</span>
+                <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${
+                  subtitleSettings.autoNext ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30' : 'bg-zinc-800 text-zinc-400 border border-white/10'
+                }`}>
+                  {subtitleSettings.autoNext ? 'ENABLED' : 'DISABLED'}
+                </span>
+              </div>
+              <p className="text-[10px] text-zinc-400">Automatically play the next video when current finishes</p>
+            </div>
+          </div>
+          <button
+            onClick={() => onUpdateSubtitleSettings({ autoNext: !subtitleSettings.autoNext })}
+            className={`w-11 h-6 rounded-full p-0.5 transition-colors relative cursor-pointer ${
+              subtitleSettings.autoNext ? 'bg-cyan-500' : 'bg-zinc-700'
+            }`}
+          >
+            <div
+              className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform ${
+                subtitleSettings.autoNext ? 'translate-x-5' : 'translate-x-0'
+              }`}
+            />
+          </button>
+        </div>
+
         {/* Subtitle Tracks List Section */}
-        <div className="mt-4 pt-4 border-t border-zinc-800/80">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2.5">
+        <div className="mt-3 pt-3 border-t border-white/20">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-zinc-300 uppercase tracking-wider mb-2.5">
             <Globe className="w-4 h-4 text-pink-400" />
             <span>Available Subtitle Languages</span>
           </div>
@@ -277,12 +307,12 @@ export const SubtitleSettingsModal: React.FC<SubtitleSettingsModalProps> = ({
                 onClick={() => handleTrackSelect(track.id)}
                 className={`p-3 rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${
                   (track.id === 'off' && !subtitleSettings.visible) || (track.id !== 'off' && subtitleSettings.visible && track.active)
-                    ? 'bg-pink-950/40 border-pink-500/40 text-pink-300'
-                    : 'bg-zinc-950/40 border-zinc-850 text-zinc-300 hover:border-zinc-700'
+                    ? 'bg-pink-950/40 border-pink-500/50 text-pink-200'
+                    : 'bg-zinc-950/40 border-white/15 text-zinc-300 hover:border-white/30'
                 }`}
               >
                 <div className="flex items-center gap-2.5">
-                  <span className="w-6 h-6 rounded-lg bg-zinc-900 border border-zinc-800 text-[10px] font-extrabold flex items-center justify-center text-zinc-400">
+                  <span className="w-6 h-6 rounded-lg bg-zinc-900 border border-white/15 text-[10px] font-extrabold flex items-center justify-center text-zinc-300">
                     {track.lang}
                   </span>
                   <span className="text-xs font-semibold">{track.label}</span>

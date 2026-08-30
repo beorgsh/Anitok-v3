@@ -790,11 +790,23 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
         if (video.readyState >= 2) {
           setIsBuffering(false);
         }
+        if (isActiveRef.current && !isUserPausedRef.current && video.paused) {
+          video.play().then(() => {
+            setIsPlaying(true);
+            setIsBuffering(false);
+          }).catch(() => {});
+        }
       });
 
       hls.on(Hls.Events.BUFFER_APPENDED, () => {
         if (video.readyState >= 2) {
           setIsBuffering(false);
+        }
+        if (isActiveRef.current && !isUserPausedRef.current && video.paused) {
+          video.play().then(() => {
+            setIsPlaying(true);
+            setIsBuffering(false);
+          }).catch(() => {});
         }
       });
 
@@ -884,6 +896,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
               }
             })
             .catch(() => {
+              // Autoplay policy fallback: Mute and replay immediately
               video.muted = true;
               video.play().then(() => {
                 setIsPlaying(true);
@@ -902,14 +915,31 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
         attemptPlay();
       };
 
-      video.addEventListener('canplay', onCanPlay, { once: true });
-      video.addEventListener('loadeddata', onCanPlay, { once: true });
+      video.addEventListener('canplay', onCanPlay);
+      video.addEventListener('canplaythrough', onCanPlay);
+      video.addEventListener('loadeddata', onCanPlay);
+
+      // Global user interaction listener to resume or unmute on first touch/click
+      const handleUserUnlock = () => {
+        if (video && isActive && video.paused) {
+          attemptPlay();
+        } else if (video && isActive && !isMuted && video.muted) {
+          video.muted = false;
+        }
+      };
+      window.addEventListener('pointerdown', handleUserUnlock, { once: true });
+      window.addEventListener('touchstart', handleUserUnlock, { once: true });
+      window.addEventListener('click', handleUserUnlock, { once: true });
 
       updateSubtitle(video.currentTime);
 
       return () => {
         video.removeEventListener('canplay', onCanPlay);
+        video.removeEventListener('canplaythrough', onCanPlay);
         video.removeEventListener('loadeddata', onCanPlay);
+        window.removeEventListener('pointerdown', handleUserUnlock);
+        window.removeEventListener('touchstart', handleUserUnlock);
+        window.removeEventListener('click', handleUserUnlock);
       };
     } else {
       setIsBuffering(false);
@@ -917,7 +947,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
       if (video && !video.paused) {
         video.pause();
       }
-      if (hlsRef.current) {
+      if (!shouldPreload && hlsRef.current) {
         hlsRef.current.stopLoad();
       }
       lastSubtitleRef.current = '';
@@ -925,7 +955,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
         onSubtitleChange('');
       }
     }
-  }, [isActive, streamData, isMuted]);
+  }, [isActive, streamData, isMuted, shouldPreload]);
 
   // Sync mute state
   useEffect(() => {
@@ -1088,7 +1118,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
     if (videoRef.current) {
       videoRef.current.pause();
     }
-    if (!isReels && onVideoEnd) {
+    if (!isReels && subtitleSettings?.autoNext && onVideoEnd) {
       onVideoEnd();
     }
   };
@@ -1789,7 +1819,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
         )}
 
         {/* Pause Triangle Indicator (No BG, No Border, ONLY drop-shadow, ONLY outside fullscreen mode) */}
-        {!isFullscreen && (isUserPaused || !isPlaying) && !loading && !error && !showAdOverlay && (
+        {!isFullscreen && isUserPaused && !loading && !isBuffering && !error && !showAdOverlay && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30 animate-fade-in">
             <Play className="w-16 h-16 sm:w-20 sm:h-20 text-white fill-white translate-x-1 drop-shadow-[0_4px_24px_rgba(0,0,0,0.95)]" />
           </div>

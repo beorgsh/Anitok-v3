@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Copy, Check, Server, Type, Eye, EyeOff, Info, Share2, MessageCircle, Send, Code, Download, CheckCircle2, Sliders, Palette, MoveVertical, Sparkles, Terminal } from 'lucide-react';
+import { X, Copy, Check, Server, Type, Eye, EyeOff, Info, Share2, MessageCircle, Send, Code, Download, CheckCircle2, Sliders, Palette, MoveVertical, Sparkles, Terminal, FastForward } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { AnimeItem, ServerType, SubtitleSettings } from '../types/anime';
 
@@ -408,8 +408,43 @@ export const ShareDrawer: React.FC<ShareDrawerProps> = ({
               </div>
             </div>
           )}
+          {/* Auto Next Video Option */}
+          <div className="py-3 flex items-center justify-between border-t border-zinc-800/80">
+            <div className="flex items-center gap-2">
+              <FastForward className="w-4 h-4 text-cyan-400" />
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-zinc-200">Auto Next Video</span>
+                  <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${
+                    subtitleSettings.autoNext ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30' : 'bg-zinc-800 text-zinc-400 border border-white/10'
+                  }`}>
+                    {subtitleSettings.autoNext ? 'ON' : 'OFF'}
+                  </span>
+                </div>
+                <div className="text-[10px] text-zinc-400">Advance to next video when current finished</div>
+              </div>
+            </div>
+            <button
+              id="toggle-auto-next"
+              onClick={() =>
+                onUpdateSubtitleSettings({
+                  autoNext: !subtitleSettings.autoNext,
+                })
+              }
+              className={`w-11 h-6 rounded-full p-0.5 transition-colors relative cursor-pointer ${
+                subtitleSettings.autoNext ? 'bg-cyan-500' : 'bg-zinc-700'
+              }`}
+            >
+              <div
+                className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform ${
+                  subtitleSettings.autoNext ? 'translate-x-5' : 'translate-x-0'
+                }`}
+              />
+            </button>
+          </div>
+
           {/* Terminal / Debugger Icon Toggle */}
-          <div className="py-3 flex items-center justify-between">
+          <div className="py-3 flex items-center justify-between border-t border-zinc-800/80">
             <div className="flex items-center gap-2">
               <Terminal className="w-4 h-4 text-cyan-400" />
               <div>

@@ -1842,8 +1842,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
 
         {/* Buffering Loader Spinner */}
         {isActive && ((loading && !streamData) || (isBuffering && !isUserPaused)) && (
-          <div className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none">
-            <div className="w-9 h-9 border-3 border-pink-500/20 border-t-pink-500 rounded-full animate-spin shadow-[0_0_15px_rgba(236,72,153,0.5)] animate-fade-in" />
+          <div className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none animate-fade-in">
+            <div className="w-9 h-9 border-[3px] border-pink-500/20 border-t-pink-500 rounded-full animate-spin shadow-[0_0_15px_rgba(236,72,153,0.5)]" />
           </div>
         )}
 

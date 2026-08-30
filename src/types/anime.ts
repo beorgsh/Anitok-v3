@@ -136,6 +136,7 @@ export interface SubtitleSettings {
   syncOffset: number; // in seconds (-5 to +5)
   showTerminalIcon?: boolean; // toggle in modals more for showing the terminal icon in player
   autoNext?: boolean; // toggle in more settings for auto proceeding to next video
+  reelsClipDuration?: 30 | 40 | 50 | 60; // Duration of clip in reels mode before watch full episode prompt (30s, 40s, 50s, 60s)
 }
 
 export interface WatchHistoryItem {

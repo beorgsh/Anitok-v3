@@ -325,12 +325,19 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
   const hasShownAdRef = useRef<boolean>(false);
 
   // Watch timestamps and resume tracking
-  const pendingResumeTimeRef = useRef<number>(initialStartTime || getSavedTimestamp(anime.slug, currentEp));
+  const pendingResumeTimeRef = useRef<number>(
+    initialStartTime === -1
+      ? 0
+      : (initialStartTime || getSavedTimestamp(anime.slug, currentEp))
+  );
   const lastHistorySaveTimeRef = useRef<number>(0);
 
   // Sync pending resume when anime or episode or initialStartTime changes
   useEffect(() => {
-    const saved = initialStartTime > 0 ? initialStartTime : getSavedTimestamp(anime.slug, currentEp);
+    const saved =
+      initialStartTime === -1
+        ? 0
+        : (initialStartTime > 0 ? initialStartTime : getSavedTimestamp(anime.slug, currentEp));
     pendingResumeTimeRef.current = saved;
   }, [anime.slug, currentEp, initialStartTime]);
 
@@ -1661,12 +1668,10 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
             const customRadiusPx = subtitleSettings?.borderRadius ?? 8;
             const customHeightOffsetPx = subtitleSettings?.heightPosition ?? 8;
 
-            // Direct height position with safe area + bottom navbar height when in portrait
+            // Direct height position relative to the video frame bottom (the stage itself already handles bottom navigation offsets)
             const bottomOffsetStr = isFullscreen
               ? `${controlsVisible ? Math.max(customHeightOffsetPx, 44) : customHeightOffsetPx}px`
-              : hideFeedUi
-                ? `${customHeightOffsetPx}px`
-                : `calc(${customHeightOffsetPx}px + 56px + env(safe-area-inset-bottom))`;
+              : `${customHeightOffsetPx}px`;
 
             return (
               <div
@@ -1905,6 +1910,41 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
           </div>
         )}
       </div>
+
+      {/* Reels Custom Watch Now Footer Link (placed above the progress bar, below CD avatar & music note, only shown after the user dismisses/cancels the watch now ad card) */}
+      {isReels && !isFullscreen && !hideFeedUi && !showAdOverlay && localStorage.getItem(`anime-ad-shown-${anime.id}`) === 'true' && (
+        <div
+          onClick={(e) => {
+            e.stopPropagation();
+            if (onWatchFull) {
+              onWatchFull();
+            } else {
+              const btn = document.getElementById(`btn-episodes-drawer-${anime.id}`);
+              if (btn) btn.click();
+            }
+          }}
+          className="absolute left-3 right-3 z-45 bg-zinc-950/75 backdrop-blur-md border border-zinc-800/80 rounded-xl py-2.5 px-3 flex items-center justify-between cursor-pointer hover:bg-zinc-900/90 active:scale-95 transition-all shadow-[0_8px_32px_rgba(0,0,0,0.5)] select-none pointer-events-auto animate-fade-in"
+          style={{
+            bottom: 'calc(84px + env(safe-area-inset-bottom))',
+          }}
+        >
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <span className="text-lg shrink-0">🍿</span>
+            <div className="flex flex-col min-w-0">
+              <span className="text-[10px] font-black text-pink-400 tracking-wider uppercase leading-none">
+                Watch Full Episode
+              </span>
+              <span className="text-[11px] font-bold text-white leading-tight truncate mt-0.5">
+                {anime.title} • Episode {currentEp}
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-1 text-[11px] font-black text-white bg-pink-600 px-3 py-1 rounded-full shadow-md shrink-0">
+            <span>Watch Now</span>
+            <span>▶️</span>
+          </div>
+        </div>
+      )}
 
       {/* Real-time Draggable Scrubber Progress Bar for Standard Portrait Feed (Fixed right above bottom navigation bar or at bottom edge when UI is hidden) */}
       {!isFullscreen && (

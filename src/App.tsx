@@ -887,6 +887,9 @@ export default function App() {
     const feed = tabFeeds[targetTab];
     const index = feed.items.findIndex((item) => item.id === targetAnime.id);
 
+    // Force starting playback from 0:00 (ignore saved watch history timestamps)
+    setInitialStartTimeMap((prev) => ({ ...prev, [targetAnime.id]: -1 }));
+
     setCurrentNav('home');
     if (index !== -1) {
       setTabFeeds((prev) => ({
@@ -1569,6 +1572,7 @@ export default function App() {
                                           setIsSearchOpen(true);
                                         }
                                       }}
+                                      isReels={tab === 'reels'}
                                     />
 
                                     {/* Sidebar Right Actions */}
@@ -1611,6 +1615,7 @@ export default function App() {
                                       hideFeedUi={hideFeedUi}
                                       hasSubtitles={subtitlesLoadedMap[anime.id] ?? (anime.is_sub !== undefined ? anime.is_sub > 0 : true)}
                                       onOpenSubtitleSettings={() => setIsSubSettingsOpen(true)}
+                                       isReels={tab === 'reels'}
                                     />
 
                                     {/* Flying double-tap heart animations */}

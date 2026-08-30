@@ -170,7 +170,7 @@ export const SubtitleSettingsModal: React.FC<SubtitleSettingsModalProps> = ({
                 </div>
                 <input
                   type="range"
-                  min="4"
+                  min="0"
                   max="40"
                   value={subtitleSettings.heightPosition}
                   onChange={(e) => onUpdateSubtitleSettings({ heightPosition: Number(e.target.value) })}

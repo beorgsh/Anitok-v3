@@ -413,11 +413,18 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
   const onSkipStateChangeRef = useRef(onSkipStateChange);
   onSkipStateChangeRef.current = onSkipStateChange;
 
-  // Format seconds to mm:ss
-  const formatTime = (secs: number) => {
-    if (isNaN(secs) || secs < 0) return '0:00';
-    const m = Math.floor(secs / 60);
-    const s = Math.floor(secs % 60);
+  // Format seconds to H:MM:SS if duration >= 60m (3600s), otherwise M:SS / MM:SS
+  const formatTime = (secs: number, maxDurationSecs?: number) => {
+    if (isNaN(secs) || secs < 0) secs = 0;
+    const totalSecs = Math.floor(secs);
+    const refSecs = maxDurationSecs !== undefined ? Math.max(totalSecs, Math.floor(maxDurationSecs)) : totalSecs;
+    const h = Math.floor(totalSecs / 3600);
+    const m = Math.floor((totalSecs % 3600) / 60);
+    const s = Math.floor(totalSecs % 60);
+
+    if (refSecs >= 3600) {
+      return `${h}:${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+    }
     return `${m}:${s < 10 ? '0' : ''}${s}`;
   };
 
@@ -2080,9 +2087,9 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
                 left: `${Math.max(6, Math.min(94, displayProgress))}%`,
               }}
             >
-              <span>{formatTime(displayCurrentTime)}</span>
+              <span>{formatTime(displayCurrentTime, isReels ? (subtitleSettings?.reelsClipDuration || 30) : duration)}</span>
               <span className="text-gray-400 mx-1">/</span>
-              <span className="text-gray-400">{formatTime(isReels ? 30 : duration)}</span>
+              <span className="text-gray-400">{formatTime(isReels ? (subtitleSettings?.reelsClipDuration || 30) : duration, isReels ? (subtitleSettings?.reelsClipDuration || 30) : duration)}</span>
             </div>
           )}
 
@@ -2324,7 +2331,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
           >
             {/* Left Timestamp: Current time */}
             <span className="text-pink-400 font-bold text-xs sm:text-sm font-mono tracking-wider shrink-0 select-none">
-              {formatTime(displayCurrentTime)}
+              {formatTime(displayCurrentTime, isReels ? (subtitleSettings?.reelsClipDuration || 30) : duration)}
             </span>
 
             {/* Middle Scrubber Progress Bar */}
@@ -2355,9 +2362,9 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
                     left: `${Math.max(6, Math.min(94, displayProgress))}%`,
                   }}
                 >
-                  <span>{formatTime(displayCurrentTime)}</span>
+                  <span>{formatTime(displayCurrentTime, isReels ? (subtitleSettings?.reelsClipDuration || 30) : duration)}</span>
                   <span className="text-gray-400 mx-1">/</span>
-                  <span className="text-gray-400">{formatTime(isReels ? 30 : duration)}</span>
+                  <span className="text-gray-400">{formatTime(isReels ? (subtitleSettings?.reelsClipDuration || 30) : duration, isReels ? (subtitleSettings?.reelsClipDuration || 30) : duration)}</span>
                 </div>
               )}
 
@@ -2404,7 +2411,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
 
             {/* Right Timestamp: Total duration */}
             <span className="text-gray-300 font-semibold text-xs sm:text-sm font-mono tracking-wider shrink-0 select-none">
-              {formatTime(isReels ? 30 : duration)}
+              {formatTime(isReels ? (subtitleSettings?.reelsClipDuration || 30) : duration, isReels ? (subtitleSettings?.reelsClipDuration || 30) : duration)}
             </span>
           </div>
 

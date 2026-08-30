@@ -135,7 +135,7 @@ export const DesktopRightPanel: React.FC<DesktopRightPanelProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-4 gap-1.5 max-h-36 overflow-y-auto pr-1">
+          <div className="grid grid-cols-4 gap-1.5 max-h-36 overflow-y-auto no-scrollbar pr-1">
             {Array.from({ length: Math.min(episodeCount, 24) }, (_, i) => i + 1).map((ep) => (
               <button
                 key={ep}
@@ -170,7 +170,7 @@ export const DesktopRightPanel: React.FC<DesktopRightPanelProps> = ({
             <MessageSquare className="w-4 h-4 text-pink-400" /> Live Discussion
           </h4>
 
-          <div className="flex flex-col gap-3 max-h-48 overflow-y-auto pr-1">
+          <div className="flex flex-col gap-3 max-h-48 overflow-y-auto no-scrollbar pr-1">
             {comments.map((c) => (
               <div key={c.id} className="flex gap-2 text-xs">
                 <img src={c.avatar} alt={c.user} className="w-7 h-7 rounded-full object-cover shrink-0" />

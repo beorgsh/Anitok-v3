@@ -118,7 +118,7 @@ export const VideoInfoOverlay: React.FC<VideoInfoOverlayProps> = React.memo(({
           ref={contentRef}
           className={`drop-shadow ${
             expanded
-              ? 'max-h-28 sm:max-h-36 overflow-y-auto overscroll-contain bg-black/80 backdrop-blur-md p-2 rounded-xl text-gray-100 shadow-xl'
+              ? 'max-h-28 sm:max-h-36 overflow-y-auto no-scrollbar overscroll-contain bg-black/80 backdrop-blur-md p-2 rounded-xl text-gray-100 shadow-xl'
               : ''
           }`}
         >

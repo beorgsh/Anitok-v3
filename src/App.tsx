@@ -2026,7 +2026,7 @@ export default function App() {
               </div>
 
               {/* Terminal Console Content */}
-              <div className="p-5 overflow-y-auto space-y-4 text-xs max-h-[50vh] text-emerald-400 font-mono">
+              <div className="p-5 overflow-y-auto no-scrollbar space-y-4 text-xs max-h-[50vh] text-emerald-400 font-mono">
                 <div className="space-y-1">
                   <div className="text-zinc-500 flex items-center justify-between">
                     <span>Last login: {new Date().toLocaleDateString()} on ttys002</span>
@@ -2177,6 +2177,24 @@ export default function App() {
                 </button>
               </div>
             </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Mobile PWA Exit Notification Toast */}
+      <AnimatePresence>
+        {showExitNotice && (
+          <motion.div
+            initial={{ opacity: 0, y: 30, scale: 0.9, x: '-50%' }}
+            animate={{ opacity: 1, y: 0, scale: 1, x: '-50%' }}
+            exit={{ opacity: 0, y: 20, scale: 0.95, x: '-50%' }}
+            transition={{ type: 'spring', stiffness: 450, damping: 28 }}
+            className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[99999] pointer-events-none select-none"
+          >
+            <div className="bg-zinc-900/95 backdrop-blur-xl border border-zinc-700/70 text-zinc-100 text-xs sm:text-sm font-medium px-4 py-2.5 rounded-full shadow-[0_10px_35px_rgba(0,0,0,0.8)] flex items-center gap-2.5">
+              <span className="text-base animate-pulse">📱</span>
+              <span>Swipe back again to close app</span>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

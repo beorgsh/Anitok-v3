@@ -2592,7 +2592,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
           </div>
 
           {/* Live Log Stream */}
-          <div className="flex-1 overflow-y-auto font-mono text-[11px] space-y-1 bg-black/80 p-2.5 rounded-xl border border-zinc-800 shadow-inner custom-scrollbar">
+          <div className="flex-1 overflow-y-auto no-scrollbar font-mono text-[11px] space-y-1 bg-black/80 p-2.5 rounded-xl border border-zinc-800 shadow-inner">
             {debugLogs.length === 0 ? (
               <div className="text-gray-500 italic text-center py-6">No log events recorded yet.</div>
             ) : (

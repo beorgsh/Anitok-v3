@@ -461,6 +461,12 @@ export const EpisodesDrawer: React.FC<EpisodesDrawerProps> = ({
                           }}
                         />
 
+                        {meta?.airDate && (
+                          <div className="mt-1.5 text-[10px] text-zinc-400 font-mono select-none">
+                            {meta.airDate}
+                          </div>
+                        )}
+
 
                         <div className="flex items-center gap-4 mt-2.5 text-[11px] text-zinc-500">
                           <button

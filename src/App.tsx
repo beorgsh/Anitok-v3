@@ -173,6 +173,10 @@ export default function App() {
   const videoViewCounterRef = useRef<number>(0);
 
   useEffect(() => {
+    if (typeof window !== 'undefined' && window.history && 'scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);

@@ -101,8 +101,8 @@ export const CommentsDrawer: React.FC<CommentsDrawerProps> = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.2, ease: 'easeOut' }}
-          className="fixed inset-0 z-50 flex flex-col justify-end bg-black/75 backdrop-blur-xs transition-opacity"
+          transition={{ duration: 0.15, ease: 'easeOut' }}
+          className="fixed inset-0 z-50 flex flex-col justify-end bg-black/80 transition-opacity"
           onClick={onClose}
         >
           <motion.div
@@ -110,8 +110,8 @@ export const CommentsDrawer: React.FC<CommentsDrawerProps> = ({
             initial={{ y: '100%', opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: '100%', opacity: 0 }}
-            transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-            className="w-full max-w-md mx-auto h-[75vh] bg-zinc-900/98 backdrop-blur-2xl border-t border-zinc-800 rounded-t-3xl flex flex-col shadow-2xl overflow-hidden"
+            transition={{ type: 'spring', damping: 30, stiffness: 350 }}
+            className="w-full max-w-md mx-auto h-[75vh] bg-zinc-950 border-t border-zinc-800 rounded-t-3xl flex flex-col shadow-2xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
         {/* Top grab bar handle */}

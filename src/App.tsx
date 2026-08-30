@@ -1138,6 +1138,58 @@ export default function App() {
   // Vertical Feed Scroll handler with RAF throttling
   const scrollRafRef = useRef<Record<string, number | null>>({});
   const isUnfullscreeningRef = useRef<boolean>(false);
+  const lastWheelTimeRef = useRef<number>(0);
+
+  const handleFeedWheelForTab = (e: React.WheelEvent<HTMLDivElement>, tab: TabType) => {
+    // If modal is open, let standard scroll operate
+    if (
+      isAuthModalOpen ||
+      isCommentsOpen ||
+      isShareOpen ||
+      isSearchOpen ||
+      isUploadOpen ||
+      isProfileSetupOpen ||
+      isAccountModalOpen ||
+      showPwaModal ||
+      showUpdatesModal ||
+      isSubSettingsOpen
+    ) {
+      return;
+    }
+
+    if (Math.abs(e.deltaY) < 10) return;
+
+    const now = Date.now();
+    // Throttle wheel scroll to strictly 1 video per scroll gesture (450ms cooldown)
+    if (now - lastWheelTimeRef.current < 450) {
+      e.preventDefault();
+      return;
+    }
+
+    const container = feedContainerRefs.current[tab];
+    if (!container) return;
+
+    const currentTabState = tabFeeds[tab];
+    if (!currentTabState || currentTabState.items.length === 0) return;
+
+    const currentIdx = currentTabState.activeIndex;
+    let targetIdx = currentIdx;
+
+    if (e.deltaY > 0 && currentIdx < currentTabState.items.length - 1) {
+      targetIdx = currentIdx + 1;
+    } else if (e.deltaY < 0 && currentIdx > 0) {
+      targetIdx = currentIdx - 1;
+    }
+
+    if (targetIdx !== currentIdx) {
+      e.preventDefault();
+      lastWheelTimeRef.current = now;
+      container.scrollTo({
+        top: targetIdx * container.clientHeight,
+        behavior: 'smooth',
+      });
+    }
+  };
 
   // Lock feed container position during fullscreen changes, window resize, and initial mount
   useEffect(() => {
@@ -1563,6 +1615,7 @@ export default function App() {
                                 feedContainerRefs.current[tab] = el;
                               }}
                               onScroll={() => handleFeedScrollForTab(tab)}
+                              onWheel={(e) => handleFeedWheelForTab(e, tab)}
                               className="w-full h-full overflow-y-scroll snap-y snap-mandatory overscroll-contain no-scrollbar relative"
                             >
                               {feed.items.map((anime, index) => {
@@ -1594,7 +1647,7 @@ export default function App() {
                                     <div
                                       key={`${anime.id}_${index}`}
                                       id={`feed-slide-${anime.id}`}
-                                      className="w-full h-full snap-start snap-normal relative shrink-0 overflow-hidden flex items-center justify-center bg-black"
+                                      className="w-full h-full snap-start snap-always relative shrink-0 overflow-hidden flex items-center justify-center bg-black"
                                       style={{ contain: 'layout paint' }}
                                     >
                                       <img
@@ -1611,7 +1664,7 @@ export default function App() {
                                   <div
                                     key={`${anime.id}_${index}`}
                                     id={`feed-slide-${anime.id}`}
-                                    className="w-full h-full snap-start snap-normal relative shrink-0 overflow-hidden flex items-center justify-center bg-black"
+                                    className="w-full h-full snap-start snap-always relative shrink-0 overflow-hidden flex items-center justify-center bg-black"
                                     style={{ contain: 'layout paint' }}
                                   >
                                     {/* HLS Video Player Component */}

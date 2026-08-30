@@ -93,8 +93,8 @@ export const ShareDrawer: React.FC<ShareDrawerProps> = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.2, ease: 'easeOut' }}
-          className="fixed inset-0 z-50 flex flex-col justify-end bg-black/75 backdrop-blur-xs select-none"
+          transition={{ duration: 0.15, ease: 'easeOut' }}
+          className="fixed inset-0 z-50 flex flex-col justify-end bg-black/80 select-none"
           onClick={onClose}
         >
           <motion.div
@@ -102,8 +102,8 @@ export const ShareDrawer: React.FC<ShareDrawerProps> = ({
             initial={{ y: '100%', opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: '100%', opacity: 0 }}
-            transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-            className="w-full max-w-md mx-auto bg-zinc-900/98 backdrop-blur-2xl border-t border-zinc-800 rounded-t-3xl p-5 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto no-scrollbar"
+            transition={{ type: 'spring', damping: 30, stiffness: 350 }}
+            className="w-full max-w-md mx-auto bg-zinc-950 border-t border-zinc-800 rounded-t-3xl p-5 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto no-scrollbar"
             onClick={(e) => e.stopPropagation()}
           >
         {/* TikTok Mobile Grab Handle */}

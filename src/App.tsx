@@ -1406,7 +1406,7 @@ export default function App() {
                               {feed.items.map((anime, index) => {
                                 const isTabActive = index === feed.activeIndex;
                                 const distance = Math.abs(index - feed.activeIndex);
-                                const shouldMount = isCurrentTab ? distance <= 4 : (isTabActive || distance <= 1);
+                                const shouldMount = isCurrentTab ? distance <= 2 : isTabActive;
                                 const isAnyModalOpen =
                                   isAuthModalOpen ||
                                   isCommentsOpen ||
@@ -1419,7 +1419,7 @@ export default function App() {
                                   showUpdatesModal ||
                                   isSubSettingsOpen;
                                 const isActive = isCurrentTab && isTabActive && currentNav === 'home' && !isAnyModalOpen;
-                                const shouldPreload = isTabActive || (isCurrentTab && distance <= 4);
+                                const shouldPreload = isTabActive || (isCurrentTab && distance <= 2);
 
                                 const isLiked = !!likedMap[anime.id];
                                 const likeCount = likeCountMap[anime.id] || 1500;

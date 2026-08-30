@@ -917,6 +917,9 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
       if (video && !video.paused) {
         video.pause();
       }
+      if (hlsRef.current) {
+        hlsRef.current.stopLoad();
+      }
       lastSubtitleRef.current = '';
       if (onSubtitleChange) {
         onSubtitleChange('');

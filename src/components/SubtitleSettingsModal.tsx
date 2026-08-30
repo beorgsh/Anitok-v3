@@ -70,7 +70,7 @@ export const SubtitleSettingsModal: React.FC<SubtitleSettingsModalProps> = ({
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: '100%', opacity: 0 }}
             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-            className="w-full max-w-md mx-auto bg-zinc-900/98 border border-white/20 rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl overflow-hidden max-h-[85vh] overflow-y-auto shadow-[0_0_25px_rgba(255,255,255,0.08)]"
+            className="w-full max-w-md mx-auto bg-zinc-900/98 border border-white/20 rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl overflow-hidden max-h-[85vh] overflow-y-auto no-scrollbar shadow-[0_0_25px_rgba(255,255,255,0.08)]"
             onClick={(e) => e.stopPropagation()}
           >
         {/* Grabbing Handle */}
@@ -302,6 +302,37 @@ export const SubtitleSettingsModal: React.FC<SubtitleSettingsModalProps> = ({
               }`}
             />
           </button>
+        </div>
+
+        {/* Reels Clip Duration Option (30s, 40s, 50s, 60s) */}
+        <div className="py-3 flex items-center justify-between border-t border-white/20 mt-3">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-pink-400" />
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-zinc-200">Reels Clip Duration</span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold bg-pink-500/20 text-pink-300 border border-pink-500/30">
+                  {subtitleSettings.reelsClipDuration || 30}s
+                </span>
+              </div>
+              <p className="text-[10px] text-zinc-400">Play length in Reels tab before watch prompt</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-1 bg-zinc-950 p-1 rounded-xl border border-white/10">
+            {([30, 40, 50, 60] as const).map((duration) => (
+              <button
+                key={duration}
+                onClick={() => onUpdateSubtitleSettings({ reelsClipDuration: duration })}
+                className={`px-2 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  (subtitleSettings.reelsClipDuration || 30) === duration
+                    ? 'bg-pink-600 text-white shadow-md'
+                    : 'text-zinc-400 hover:text-zinc-200'
+                }`}
+              >
+                {duration}s
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Subtitle Tracks List Section */}

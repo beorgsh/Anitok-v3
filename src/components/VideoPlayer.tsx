@@ -368,6 +368,34 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
     setAdDismissed(localStorage.getItem(`anime-ad-shown-${anime.id}`) === 'true');
   }, [anime.id, currentEp, server]);
 
+  // Handle swipe back on mobile for in-player overlays and modals
+  useEffect(() => {
+    const handleInPlayerPopState = (e: PopStateEvent) => {
+      if (showInPlayerEpModal) {
+        setShowInPlayerEpModal(false);
+        e.stopImmediatePropagation();
+        try { window.history.pushState({ pwaActive: true }, ''); } catch (err) {}
+      } else if (showInPlayerSubSettingsModal) {
+        setShowInPlayerSubSettingsModal(false);
+        e.stopImmediatePropagation();
+        try { window.history.pushState({ pwaActive: true }, ''); } catch (err) {}
+      } else if (showDebugLogs) {
+        setShowDebugLogs(false);
+        e.stopImmediatePropagation();
+        try { window.history.pushState({ pwaActive: true }, ''); } catch (err) {}
+      } else if (showAdOverlay) {
+        setShowAdOverlay(false);
+        e.stopImmediatePropagation();
+        try { window.history.pushState({ pwaActive: true }, ''); } catch (err) {}
+      }
+    };
+
+    window.addEventListener('popstate', handleInPlayerPopState, true);
+    return () => {
+      window.removeEventListener('popstate', handleInPlayerPopState, true);
+    };
+  }, [showInPlayerEpModal, showInPlayerSubSettingsModal, showDebugLogs, showAdOverlay]);
+
   // Hold gesture for 2X playback speed
   const [isHolding2x, setIsHolding2x] = useState<boolean>(false);
   const holdTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -1001,19 +1029,23 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
 
     UnifiedMediaManager.trackWatchProgress(anime.slug, cur, dur);
 
+    const reelsClipDuration = subtitleSettings?.reelsClipDuration || 30;
+
     if (isReels && dur > 0) {
       if (!hasSoughtToMiddleRef.current) {
-        const startTime = dur / 2;
+        const maxStart = Math.max(0, dur - reelsClipDuration);
+        const minStart = maxStart > 60 ? 30 : 0;
+        const randomStart = Math.floor(minStart + Math.random() * (maxStart - minStart));
         hasSoughtToMiddleRef.current = true;
-        reelStartTimeRef.current = startTime;
-        video.currentTime = startTime;
-        addLog(`REELS: Seeking to middle of anime: ${formatTime(startTime)}`);
+        reelStartTimeRef.current = randomStart;
+        video.currentTime = randomStart;
+        addLog(`REELS: Seeking to random timestamp: ${formatTime(randomStart)} (duration: ${formatTime(dur)}, clipLimit: ${reelsClipDuration}s)`);
         return;
       }
 
-      const startTime = reelStartTimeRef.current || (dur / 2);
-      if (cur >= startTime + 30) {
-        addLog(`REELS: 30 seconds elapsed. Triggering Watch Full modal.`);
+      const startTime = reelStartTimeRef.current || 0;
+      if (cur >= startTime + reelsClipDuration) {
+        addLog(`REELS: ${reelsClipDuration}s clip elapsed. Triggering Watch Full modal.`);
         setShowAdOverlay(true);
         if (videoRef.current) {
           videoRef.current.pause();
@@ -1023,27 +1055,15 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
       }
     }
 
-    const checkTime = isReels ? (cur - (reelStartTimeRef.current || 0)) : cur;
-    if (isReels && checkTime >= 26 && !hasShownAdRef.current) {
-      hasShownAdRef.current = true;
-      setShowAdOverlay(true);
-      if (videoRef.current) {
-        videoRef.current.pause();
-      }
-      setIsPlaying(false);
-      addLog(`AD: Triggered ad overlay for anime ${anime.title}`);
-      return;
-    }
-
     const prog = dur > 0 ? (cur / dur) * 100 : 0;
 
     if (!isScrubbing) {
       setCurrentTime(cur);
       setDuration(dur);
       if (isReels) {
-        const startTime = reelStartTimeRef.current || (dur / 2);
-        const rel = Math.max(0, Math.min(30, cur - startTime));
-        setProgress((rel / 30) * 100);
+        const startTime = reelStartTimeRef.current || 0;
+        const rel = Math.max(0, Math.min(reelsClipDuration, cur - startTime));
+        setProgress((rel / reelsClipDuration) * 100);
       } else {
         setProgress(prog);
       }
@@ -1054,13 +1074,13 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
       for (let i = 0; i < video.buffered.length; i++) {
         if (video.buffered.start(i) <= cur && cur <= video.buffered.end(i)) {
           if (isReels) {
-            const startTime = reelStartTimeRef.current || (dur / 2);
+            const startTime = reelStartTimeRef.current || 0;
             const bufStart = video.buffered.start(i);
             const bufEnd = video.buffered.end(i);
             const overlapStart = Math.max(startTime, bufStart);
-            const overlapEnd = Math.min(startTime + 30, bufEnd);
+            const overlapEnd = Math.min(startTime + reelsClipDuration, bufEnd);
             const overlapLen = Math.max(0, overlapEnd - overlapStart);
-            setBufferedProgress((overlapLen / 30) * 100);
+            setBufferedProgress((overlapLen / reelsClipDuration) * 100);
           } else {
             setBufferedProgress((video.buffered.end(i) / dur) * 100);
           }
@@ -1076,14 +1096,14 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
 
     if (isActive && onProgressUpdate && !isScrubbing) {
       onProgressUpdate(
-        isReels ? ((Math.max(0, Math.min(30, cur - (reelStartTimeRef.current || (dur / 2)))) / 30) * 100) : prog,
+        isReels ? ((Math.max(0, Math.min(reelsClipDuration, cur - (reelStartTimeRef.current || 0))) / reelsClipDuration) * 100) : prog,
         cur,
         dur,
         (percentage: number) => {
           if (videoRef.current && dur > 0) {
             if (isReels) {
-              const startTime = reelStartTimeRef.current || (dur / 2);
-              const newTime = startTime + (percentage / 100) * 30;
+              const startTime = reelStartTimeRef.current || 0;
+              const newTime = startTime + (percentage / 100) * reelsClipDuration;
               videoRef.current.currentTime = newTime;
               setProgress(percentage);
               setCurrentTime(newTime);
@@ -1115,18 +1135,19 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
   const handleVideoEnded = () => {
     addLog('VIDEO_EVENT: ended');
     setIsPlaying(false);
-    setShowAdOverlay(true);
-    if (videoRef.current) {
-      videoRef.current.pause();
-    }
-    if (!isReels && subtitleSettings?.autoNext && onVideoEnd) {
+    if (isReels) {
+      setShowAdOverlay(true);
+      if (videoRef.current) {
+        videoRef.current.pause();
+      }
+    } else if (subtitleSettings?.autoNext && onVideoEnd) {
       onVideoEnd();
     }
   };
 
   // Real-time Scrub / Drag seeking logic
   const calculateScrubPosition = (clientX: number) => {
-    const dur = isReels ? 30 : duration;
+    const dur = isReels ? (subtitleSettings?.reelsClipDuration || 30) : duration;
     if (!progressBarRef.current || !dur) return 0;
     const rect = progressBarRef.current.getBoundingClientRect();
     const pos = (clientX - rect.left) / rect.width;
@@ -1900,8 +1921,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
           </div>
         )}
 
-        {/* Beautiful Glassy Black Ad Overlay */}
-        {showAdOverlay && (
+        {/* Beautiful Glassy Black Ad Overlay (Reels tab only) */}
+        {isReels && showAdOverlay && (
           <div
             className="fixed inset-0 bg-black/90 backdrop-blur-xl z-[100] flex flex-col items-center justify-center p-6 text-center select-none cursor-pointer pointer-events-auto"
             onClick={(e) => {

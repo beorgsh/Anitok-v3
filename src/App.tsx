@@ -128,10 +128,23 @@ export default function App() {
 
   const [saveCountMap, setSaveCountMap] = useState<Record<number, number>>({});
 
-  const [globalDub, setGlobalDub] = useState<boolean>(false);
+  const [globalDub, setGlobalDub] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('global_dub_setting') === 'true';
+    } catch {
+      return false;
+    }
+  });
 
   const handleToggleDub = useCallback((checked: boolean) => {
     setGlobalDub(checked);
+    try {
+      localStorage.setItem('global_dub_setting', checked ? 'true' : 'false');
+    } catch (e) {}
+    toast.success(checked ? 'English Dub enabled for all videos' : 'Japanese Sub enabled for all videos', {
+      duration: 2000,
+      style: { background: '#18181b', color: '#fff', border: '1px solid #27272a', fontSize: '12px' },
+    });
   }, []);
 
   // Track loaded subtitle status per anime ID
@@ -328,6 +341,137 @@ export default function App() {
   const [isRepoPrivateOr404, setIsRepoPrivateOr404] = useState<boolean>(false);
   const [githubPatInput, setGithubPatInput] = useState<string>(() => localStorage.getItem('github_pat') || '');
   const [showPatInput, setShowPatInput] = useState<boolean>(false);
+
+  // PWA Back Gesture & History Navigation Handler
+  const lastBackPressRef = useRef<number>(0);
+  const [showExitNotice, setShowExitNotice] = useState<boolean>(false);
+  const exitNoticeTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const isAnyModalOpenState =
+    isCommentsOpen ||
+    isShareOpen ||
+    isSearchOpen ||
+    isUploadOpen ||
+    isAuthModalOpen ||
+    isProfileSetupOpen ||
+    isAccountModalOpen ||
+    showUpdatesModal ||
+    isSubSettingsOpen ||
+    showPwaModal;
+
+  // Push history entry whenever a modal opens or navigation leaves home
+  useEffect(() => {
+    if (isAnyModalOpenState || currentNav !== 'home') {
+      try {
+        window.history.pushState({ modalOpen: true }, '');
+      } catch (e) {}
+    }
+  }, [isAnyModalOpenState, currentNav]);
+
+  useEffect(() => {
+    try {
+      window.history.pushState({ page: 'home' }, '');
+    } catch (e) {}
+
+    const handlePopState = () => {
+      // 1. Close open modals first and restore history state buffer
+      if (isSubSettingsOpen) {
+        setIsSubSettingsOpen(false);
+        try { window.history.pushState({ page: 'home' }, ''); } catch (e) {}
+        return;
+      }
+      if (isCommentsOpen) {
+        setIsCommentsOpen(false);
+        try { window.history.pushState({ page: 'home' }, ''); } catch (e) {}
+        return;
+      }
+      if (isShareOpen) {
+        setIsShareOpen(false);
+        try { window.history.pushState({ page: 'home' }, ''); } catch (e) {}
+        return;
+      }
+      if (isSearchOpen) {
+        setIsSearchOpen(false);
+        setSearchInitialGenre(null);
+        try { window.history.pushState({ page: 'home' }, ''); } catch (e) {}
+        return;
+      }
+      if (isUploadOpen) {
+        setIsUploadOpen(false);
+        try { window.history.pushState({ page: 'home' }, ''); } catch (e) {}
+        return;
+      }
+      if (isAuthModalOpen) {
+        setIsAuthModalOpen(false);
+        try { window.history.pushState({ page: 'home' }, ''); } catch (e) {}
+        return;
+      }
+      if (isProfileSetupOpen) {
+        setIsProfileSetupOpen(false);
+        try { window.history.pushState({ page: 'home' }, ''); } catch (e) {}
+        return;
+      }
+      if (isAccountModalOpen) {
+        setIsAccountModalOpen(false);
+        try { window.history.pushState({ page: 'home' }, ''); } catch (e) {}
+        return;
+      }
+      if (showUpdatesModal) {
+        setShowUpdatesModal(false);
+        try { window.history.pushState({ page: 'home' }, ''); } catch (e) {}
+        return;
+      }
+      if (showPwaModal) {
+        setShowPwaModal(false);
+        try { window.history.pushState({ page: 'home' }, ''); } catch (e) {}
+        return;
+      }
+
+      // 2. Return to home tab if in another view
+      if (currentNav !== 'home') {
+        setCurrentNav('home');
+        try { window.history.pushState({ page: 'home' }, ''); } catch (e) {}
+        return;
+      }
+
+      // 3. On home feed: require double back swipe to exit, showing custom PWA exit notification
+      const now = Date.now();
+      if (now - lastBackPressRef.current < 2500) {
+        // Second back swipe within 2.5 seconds -> exit app
+        if (exitNoticeTimerRef.current) clearTimeout(exitNoticeTimerRef.current);
+        setShowExitNotice(false);
+        return;
+      } else {
+        lastBackPressRef.current = now;
+        try {
+          window.history.pushState({ page: 'home' }, '');
+        } catch (e) {}
+
+        setShowExitNotice(true);
+        if (exitNoticeTimerRef.current) clearTimeout(exitNoticeTimerRef.current);
+        exitNoticeTimerRef.current = setTimeout(() => {
+          setShowExitNotice(false);
+        }, 2500);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [
+    isSubSettingsOpen,
+    isCommentsOpen,
+    isShareOpen,
+    isSearchOpen,
+    isUploadOpen,
+    isAuthModalOpen,
+    isProfileSetupOpen,
+    isAccountModalOpen,
+    showUpdatesModal,
+    showPwaModal,
+    currentNav,
+  ]);
 
   const fetchCommits = async (patOverride?: string) => {
     setLoadingCommits(true);

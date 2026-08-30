@@ -103,7 +103,7 @@ export const ShareDrawer: React.FC<ShareDrawerProps> = ({
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: '100%', opacity: 0 }}
             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-            className="w-full max-w-md mx-auto bg-zinc-900/98 backdrop-blur-2xl border-t border-zinc-800 rounded-t-3xl p-5 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
+            className="w-full max-w-md mx-auto bg-zinc-900/98 backdrop-blur-2xl border-t border-zinc-800 rounded-t-3xl p-5 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto no-scrollbar"
             onClick={(e) => e.stopPropagation()}
           >
         {/* TikTok Mobile Grab Handle */}

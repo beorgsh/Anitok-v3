@@ -328,7 +328,7 @@ export const EpisodesDrawer: React.FC<EpisodesDrawerProps> = ({
         )}
 
         {/* TikTok Comments List where each Episode is a Comment with Attached Thumbnail */}
-        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-5 divide-y divide-zinc-800/50">
+        <div className="flex-1 overflow-y-auto no-scrollbar p-4 flex flex-col gap-5 divide-y divide-zinc-800/50">
           {paginatedEpisodeNumbers.length === 0 ? (
             <div className="py-12 flex flex-col items-center justify-center text-center">
               <Search className="w-8 h-8 text-zinc-600 mb-2" />

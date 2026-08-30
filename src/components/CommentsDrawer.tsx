@@ -157,7 +157,7 @@ export const CommentsDrawer: React.FC<CommentsDrawerProps> = ({
         </div>
 
         {/* Comment List */}
-        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3.5">
+        <div className="flex-1 overflow-y-auto no-scrollbar p-4 flex flex-col gap-3.5">
           {comments.map((comment) => (
             <div key={comment.id} className="flex gap-3 group">
               <img

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import Hls from 'hls.js';
-import { Play, Pause, Volume2, VolumeX, AlertCircle, RefreshCw, Terminal, X, Copy, Check, Trash2, RotateCcw, RotateCw, ChevronLeft, Sliders, SkipBack, SkipForward, ListVideo, Eye, EyeOff } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, AlertCircle, RefreshCw, Terminal, X, Copy, Check, Trash2, RotateCcw, RotateCw, ChevronLeft, ChevronRight, Sliders, SkipBack, SkipForward, ListVideo, Eye, EyeOff } from 'lucide-react';
 import { AnimeItem, ServerType, StreamData, SubtitleSettings } from '../types/anime';
 import { fetchAnimeStream, getProxiedM3u8Url, getCachedStream, checkDubAvailable } from '../services/animeApi';
 import { UnifiedMediaManager } from '../services/UnifiedMediaManager';
@@ -138,6 +138,7 @@ interface VideoPlayerProps {
   onToggleHideFeedUi?: () => void;
   onSelectEp?: (ep: number) => void;
   onUpdateSubtitleSettings?: (settings: Partial<SubtitleSettings>) => void;
+  onWatchNowActiveChange?: (active: boolean) => void;
 }
 
 export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
@@ -174,6 +175,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
   onToggleHideFeedUi,
   onSelectEp,
   onUpdateSubtitleSettings,
+  onWatchNowActiveChange,
 }) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const hlsRef = useRef<Hls | null>(null);
@@ -322,6 +324,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
   const reelStartTimeRef = useRef<number | null>(null);
   const isReelsLoopingRef = useRef<boolean>(false);
   const [showAdOverlay, setShowAdOverlay] = useState<boolean>(false);
+  const [adDismissed, setAdDismissed] = useState<boolean>(() => localStorage.getItem(`anime-ad-shown-${anime.id}`) === 'true');
   const hasShownAdRef = useRef<boolean>(false);
 
   // Watch timestamps and resume tracking
@@ -361,6 +364,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
     isReelsLoopingRef.current = false;
     hasShownAdRef.current = false;
     setShowAdOverlay(false);
+    setAdDismissed(localStorage.getItem(`anime-ad-shown-${anime.id}`) === 'true');
   }, [anime.id, currentEp, server]);
 
   // Hold gesture for 2X playback speed
@@ -635,6 +639,16 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
   onSubtitlesLoadedRef.current = onSubtitlesLoaded;
   const onSubtitleChangeRef = useRef(onSubtitleChange);
   onSubtitleChangeRef.current = onSubtitleChange;
+
+  const onWatchNowActiveChangeRef = useRef(onWatchNowActiveChange);
+  onWatchNowActiveChangeRef.current = onWatchNowActiveChange;
+
+  useEffect(() => {
+    if (onWatchNowActiveChangeRef.current) {
+      const active = isReels && !isFullscreen && !hideFeedUi && !showAdOverlay && adDismissed;
+      onWatchNowActiveChangeRef.current(active);
+    }
+  }, [isReels, isFullscreen, hideFeedUi, showAdOverlay, adDismissed]);
 
   // Direct VTT subtitle fetch & parse fallback for 100% subtitle reliability
   useEffect(() => {
@@ -965,25 +979,26 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
 
       const startTime = reelStartTimeRef.current || (dur / 2);
       if (cur >= startTime + 30) {
-        addLog(`REELS: 30 seconds elapsed. Repeating snippet instantly.`);
-        isReelsLoopingRef.current = true;
-        video.currentTime = startTime;
-        setIsBuffering(false);
+        addLog(`REELS: 30 seconds elapsed. Triggering Watch Full modal.`);
+        setShowAdOverlay(true);
+        if (videoRef.current) {
+          videoRef.current.pause();
+        }
+        setIsPlaying(false);
         return;
       }
     }
 
     const checkTime = isReels ? (cur - (reelStartTimeRef.current || 0)) : cur;
     if (isReels && checkTime >= 26 && !hasShownAdRef.current) {
-      const adDismissed = localStorage.getItem(`anime-ad-shown-${anime.id}`);
-      if (!adDismissed) {
-        hasShownAdRef.current = true;
-        setShowAdOverlay(true);
-        video.pause();
-        setIsPlaying(false);
-        addLog(`AD: Triggered ad overlay for anime ${anime.title}`);
-        return;
+      hasShownAdRef.current = true;
+      setShowAdOverlay(true);
+      if (videoRef.current) {
+        videoRef.current.pause();
       }
+      setIsPlaying(false);
+      addLog(`AD: Triggered ad overlay for anime ${anime.title}`);
+      return;
     }
 
     const prog = dur > 0 ? (cur / dur) * 100 : 0;
@@ -1060,6 +1075,18 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
         lastHistorySaveTimeRef.current = now;
         saveWatchProgress(anime, currentEp, cur, dur, isDub, server);
       }
+    }
+  };
+
+  const handleVideoEnded = () => {
+    addLog('VIDEO_EVENT: ended');
+    setIsPlaying(false);
+    setShowAdOverlay(true);
+    if (videoRef.current) {
+      videoRef.current.pause();
+    }
+    if (!isReels && onVideoEnd) {
+      onVideoEnd();
     }
   };
 
@@ -1496,11 +1523,11 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
         return false;
       }}
     >
-      {/* Video display stage offset above bottom navbar in portrait, full screen in fullscreen */}
+      {/* Video display stage offset above bottom navbar in portrait, full screen in fullscreen or when UI is hidden */}
       <div
         ref={stageRef}
         className={`absolute top-0 left-0 right-0 ${
-          isFullscreen ? 'bottom-0' : 'bottom-[calc(56px+env(safe-area-inset-bottom))] sm:bottom-[calc(60px+env(safe-area-inset-bottom))]'
+          (isFullscreen || hideFeedUi) ? 'bottom-0' : 'bottom-[calc(56px+env(safe-area-inset-bottom))] sm:bottom-[calc(60px+env(safe-area-inset-bottom))]'
         } flex items-center justify-center overflow-hidden bg-black select-none pointer-events-none`}
       >
         {/* Dynamic Video Aspect Ratio Frame Container */}
@@ -1556,7 +1583,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
             }}
             style={{ WebkitTouchCallout: 'none', userSelect: 'none' }}
             onTimeUpdate={handleTimeUpdate}
-            onEnded={onVideoEnd}
+            onEnded={handleVideoEnded}
             onLoadedMetadata={(e) => {
               const vid = e.currentTarget;
               if (vid.videoWidth && vid.videoHeight) {
@@ -1833,12 +1860,17 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
         {/* Beautiful Glassy Black Ad Overlay */}
         {showAdOverlay && (
           <div
-            className="absolute inset-0 bg-black/90 backdrop-blur-xl z-45 flex flex-col items-center justify-center p-6 text-center select-none cursor-pointer pointer-events-auto"
+            className="fixed inset-0 bg-black/90 backdrop-blur-xl z-[100] flex flex-col items-center justify-center p-6 text-center select-none cursor-pointer pointer-events-auto"
             onClick={(e) => {
               e.stopPropagation();
               localStorage.setItem(`anime-ad-shown-${anime.id}`, 'true');
+              setAdDismissed(true);
               setShowAdOverlay(false);
               if (videoRef.current) {
+                if (isReels) {
+                  const startTime = reelStartTimeRef.current || (videoRef.current.duration / 2);
+                  videoRef.current.currentTime = startTime;
+                }
                 videoRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
               }
             }}
@@ -1862,21 +1894,22 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
               </div>
 
               {/* Content text */}
-              <div className="flex flex-col gap-1.5 px-2">
+              <div className="flex flex-col gap-1.5 px-2 pt-1.5">
                 <h3 className="font-extrabold text-base leading-tight text-white line-clamp-1">
                   {anime.title}
                 </h3>
-                <p className="text-gray-300 text-xs leading-relaxed">
+                <p className="text-gray-300 text-xs leading-relaxed mt-1">
                   Enjoying the snippet? Watch the full episodes now!
                 </p>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-3 w-full mt-1">
+              <div className="flex gap-3 w-full mt-2">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     localStorage.setItem(`anime-ad-shown-${anime.id}`, 'true');
+                    setAdDismissed(true);
                     setShowAdOverlay(false);
                     if (videoRef.current) {
                       videoRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
@@ -1888,16 +1921,22 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
                       if (btn) btn.click();
                     }
                   }}
-                  className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-pink-500 to-cyan-500 hover:opacity-95 active:scale-95 text-white font-extrabold text-xs transition-all shadow-lg"
+                  className="flex-1 py-2.5 px-4 rounded-xl bg-pink-600 hover:bg-pink-500 active:scale-95 text-white font-extrabold text-xs transition-all shadow-lg flex items-center justify-center gap-1.5"
                 >
-                  Watch Now
+                  <Play className="w-3.5 h-3.5 fill-current" />
+                  <span>Watch Now</span>
                 </button>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     localStorage.setItem(`anime-ad-shown-${anime.id}`, 'true');
+                    setAdDismissed(true);
                     setShowAdOverlay(false);
                     if (videoRef.current) {
+                      if (isReels) {
+                        const startTime = reelStartTimeRef.current || (videoRef.current.duration / 2);
+                        videoRef.current.currentTime = startTime;
+                      }
                       videoRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
                     }
                   }}
@@ -1912,7 +1951,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
       </div>
 
       {/* Reels Custom Watch Now Footer Link (placed above the progress bar, below CD avatar & music note, only shown after the user dismisses/cancels the watch now ad card) */}
-      {isReels && !isFullscreen && !hideFeedUi && !showAdOverlay && localStorage.getItem(`anime-ad-shown-${anime.id}`) === 'true' && (
+      {isReels && !isFullscreen && !hideFeedUi && !showAdOverlay && adDismissed && (
         <div
           onClick={(e) => {
             e.stopPropagation();
@@ -1929,19 +1968,19 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
           }}
         >
           <div className="flex items-center gap-2.5 min-w-0 flex-1">
-            <span className="text-lg shrink-0">🍿</span>
-            <div className="flex flex-col min-w-0">
+            <Play className="w-4 h-4 text-pink-400 fill-pink-400 shrink-0" />
+            <div className="flex flex-col min-w-0 pt-0.5">
               <span className="text-[10px] font-black text-pink-400 tracking-wider uppercase leading-none">
                 Watch Full Episode
               </span>
-              <span className="text-[11px] font-bold text-white leading-tight truncate mt-0.5">
+              <span className="text-[11px] font-bold text-white leading-tight truncate mt-1">
                 {anime.title} • Episode {currentEp}
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-1 text-[11px] font-black text-white bg-pink-600 px-3 py-1 rounded-full shadow-md shrink-0">
+          <div className="flex items-center gap-1 text-[11px] font-extrabold text-pink-400 shrink-0">
             <span>Watch Now</span>
-            <span>▶️</span>
+            <ChevronRight className="w-4 h-4 text-pink-400" />
           </div>
         </div>
       )}

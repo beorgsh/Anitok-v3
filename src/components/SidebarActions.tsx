@@ -24,6 +24,7 @@ interface SidebarActionsProps {
   hasSubtitles?: boolean;
   onOpenSubtitleSettings?: () => void;
   isReels?: boolean;
+  isWatchNowActive?: boolean;
 }
 
 export const SidebarActions: React.FC<SidebarActionsProps> = React.memo(({
@@ -47,6 +48,7 @@ export const SidebarActions: React.FC<SidebarActionsProps> = React.memo(({
   hasSubtitles = true,
   onOpenSubtitleSettings,
   isReels = false,
+  isWatchNowActive = false,
 }) => {
   const [followed, setFollowed] = useState<boolean>(false);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(
@@ -125,7 +127,7 @@ export const SidebarActions: React.FC<SidebarActionsProps> = React.memo(({
       className={`absolute z-45 flex flex-col items-center text-white pointer-events-auto select-none transition-all duration-300 ${
         isFullscreen
           ? 'right-3 sm:right-6 bottom-14 sm:bottom-16 gap-1.5 sm:gap-2 scale-90 sm:scale-100 drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]'
-          : isReels
+          : (isReels && isWatchNowActive)
           ? 'right-2 sm:right-3 bottom-[calc(138px+env(safe-area-inset-bottom))] sm:bottom-[calc(154px+env(safe-area-inset-bottom))] gap-2 sm:gap-3'
           : 'right-2 sm:right-3 bottom-[calc(72px+env(safe-area-inset-bottom))] sm:bottom-[calc(88px+env(safe-area-inset-bottom))] gap-2 sm:gap-3'
       }`}

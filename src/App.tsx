@@ -136,6 +136,9 @@ export default function App() {
   // Track loaded subtitle status per anime ID
   const [subtitlesLoadedMap, setSubtitlesLoadedMap] = useState<Record<number, boolean>>({});
 
+  // Track whether the "Watch Now" footer is actively visible on each Reels video card
+  const [watchNowActiveMap, setWatchNowActiveMap] = useState<Record<number, boolean>>({});
+
   // Comprehensive Subtitle Settings State
   const [subtitleSettings, setSubtitleSettings] = useState<SubtitleSettings>(() => {
     const defaults: SubtitleSettings = {
@@ -1551,6 +1554,12 @@ export default function App() {
                                       onUpdateSubtitleSettings={handleUpdateSubtitleSettings}
                                       hideFeedUi={hideFeedUi}
                                       onToggleHideFeedUi={() => setHideFeedUi(!hideFeedUi)}
+                                      onWatchNowActiveChange={(active) => {
+                                        setWatchNowActiveMap((prev) => {
+                                          if (prev[anime.id] === active) return prev;
+                                          return { ...prev, [anime.id]: active };
+                                        });
+                                      }}
                                     />
 
                                     {/* Video Info Overlay */}
@@ -1573,6 +1582,7 @@ export default function App() {
                                         }
                                       }}
                                       isReels={tab === 'reels'}
+                                      isWatchNowActive={!!watchNowActiveMap[anime.id]}
                                     />
 
                                     {/* Sidebar Right Actions */}
@@ -1615,7 +1625,8 @@ export default function App() {
                                       hideFeedUi={hideFeedUi}
                                       hasSubtitles={subtitlesLoadedMap[anime.id] ?? (anime.is_sub !== undefined ? anime.is_sub > 0 : true)}
                                       onOpenSubtitleSettings={() => setIsSubSettingsOpen(true)}
-                                       isReels={tab === 'reels'}
+                                      isReels={tab === 'reels'}
+                                      isWatchNowActive={!!watchNowActiveMap[anime.id]}
                                     />
 
                                     {/* Flying double-tap heart animations */}

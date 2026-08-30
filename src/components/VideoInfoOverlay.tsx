@@ -16,6 +16,7 @@ interface VideoInfoOverlayProps {
   hideFeedUi?: boolean;
   onSelectGenre?: (genre: string) => void;
   isReels?: boolean;
+  isWatchNowActive?: boolean;
 }
 
 export const VideoInfoOverlay: React.FC<VideoInfoOverlayProps> = React.memo(({
@@ -26,6 +27,7 @@ export const VideoInfoOverlay: React.FC<VideoInfoOverlayProps> = React.memo(({
   hideFeedUi = false,
   onSelectGenre,
   isReels = false,
+  isWatchNowActive = false,
 }) => {
   const [expanded, setExpanded] = useState<boolean>(false);
   const [tagsExpanded, setTagsExpanded] = useState<boolean>(false);
@@ -80,7 +82,7 @@ export const VideoInfoOverlay: React.FC<VideoInfoOverlayProps> = React.memo(({
       className={`absolute z-45 flex flex-col gap-1.5 text-white pointer-events-auto transition-all duration-300 ${
         isFullscreen
           ? 'bottom-12 sm:bottom-16 left-3 sm:left-6 right-20 sm:right-24 max-w-sm sm:max-w-xl drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]'
-          : isReels
+          : (isReels && isWatchNowActive)
           ? 'bottom-[calc(138px+env(safe-area-inset-bottom))] sm:bottom-[calc(154px+env(safe-area-inset-bottom))] left-2.5 sm:left-3 right-14 sm:right-16 max-w-[270px] sm:max-w-xl pb-0.5'
           : 'bottom-[calc(72px+env(safe-area-inset-bottom))] sm:bottom-[calc(88px+env(safe-area-inset-bottom))] left-2.5 sm:left-3 right-14 sm:right-16 max-w-[270px] sm:max-w-xl pb-0.5'
       }`}

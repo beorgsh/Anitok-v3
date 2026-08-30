@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'motion/react';
 import { X, Copy, Check, Server, Type, Eye, EyeOff, Info, Share2, MessageCircle, Send, Code, Download, CheckCircle2, Sliders, Palette, MoveVertical, Sparkles, Terminal, FastForward } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { AnimeItem, ServerType, SubtitleSettings } from '../types/anime';
@@ -38,8 +39,6 @@ export const ShareDrawer: React.FC<ShareDrawerProps> = ({
   onOpenUpdates,
 }) => {
   const [copied, setCopied] = useState<boolean>(false);
-
-  if (!isOpen) return null;
 
   const shareUrl = window.location.href;
 
@@ -86,15 +85,27 @@ export const ShareDrawer: React.FC<ShareDrawerProps> = ({
     subtitleSettings.color === 'yellow' ? '#fef08a' : subtitleSettings.color === 'cyan' ? '#67e8f9' : '#ffffff';
 
   const drawerContent = (
-    <div
-      id={`share-drawer-${anime.id}`}
-      className="fixed inset-0 z-50 flex flex-col justify-end bg-black/75 backdrop-blur-xs select-none"
-      onClick={onClose}
-    >
-      <div
-        className="w-full max-w-md mx-auto bg-zinc-900/98 backdrop-blur-2xl border-t border-zinc-800 rounded-t-3xl p-5 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          id={`share-drawer-${anime.id}`}
+          key="share-drawer-backdrop"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2, ease: 'easeOut' }}
+          className="fixed inset-0 z-50 flex flex-col justify-end bg-black/75 backdrop-blur-xs select-none"
+          onClick={onClose}
+        >
+          <motion.div
+            key="share-drawer-sheet"
+            initial={{ y: '100%', opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: '100%', opacity: 0 }}
+            transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+            className="w-full max-w-md mx-auto bg-zinc-900/98 backdrop-blur-2xl border-t border-zinc-800 rounded-t-3xl p-5 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
         {/* TikTok Mobile Grab Handle */}
         <div className="w-10 h-1 bg-zinc-700 rounded-full mx-auto mb-3" />
 
@@ -510,8 +521,10 @@ export const ShareDrawer: React.FC<ShareDrawerProps> = ({
             <span>{copied ? 'Copied' : 'Copy'}</span>
           </button>
         </div>
-      </div>
-    </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 
   const mountTarget = (typeof document !== 'undefined' && document.fullscreenElement) || (typeof document !== 'undefined' && document.body) || null;

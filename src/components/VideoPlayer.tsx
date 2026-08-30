@@ -364,6 +364,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
     isReelsLoopingRef.current = false;
     hasShownAdRef.current = false;
     setShowAdOverlay(false);
+    setIsUserPaused(false);
     setAdDismissed(localStorage.getItem(`anime-ad-shown-${anime.id}`) === 'true');
   }, [anime.id, currentEp, server]);
 
@@ -1377,7 +1378,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
       return;
     }
     // Block all tap/click gestures while loader is active or stream is not ready
-    const isLoaderActive = loading || (isBuffering && (!videoRef.current || videoRef.current.readyState < 2)) || !streamData;
+    const isLoaderActive = loading || !streamData || (videoRef.current && videoRef.current.readyState < 2) || (isBuffering && (!videoRef.current || videoRef.current.readyState < 2));
     if (isLoaderActive) return;
 
     if (isScrubbing || is2xActiveRef.current || isHolding2x) return;
@@ -1819,10 +1820,19 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = React.memo(({
         )}
 
         {/* Pause Triangle Indicator (No BG, No Border, ONLY drop-shadow, ONLY outside fullscreen mode) */}
-        {!isFullscreen && isUserPaused && !loading && !isBuffering && !error && !showAdOverlay && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30 animate-fade-in">
-            <Play className="w-16 h-16 sm:w-20 sm:h-20 text-white fill-white translate-x-1 drop-shadow-[0_4px_24px_rgba(0,0,0,0.95)]" />
-          </div>
+        {!isFullscreen &&
+          isActive &&
+          isUserPaused &&
+          !isPlaying &&
+          !loading &&
+          !isBuffering &&
+          !error &&
+          !showAdOverlay &&
+          !!streamData &&
+          !!(videoRef.current && videoRef.current.readyState >= 2) && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30 animate-fade-in">
+              <Play className="w-16 h-16 sm:w-20 sm:h-20 text-white fill-white translate-x-1 drop-shadow-[0_4px_24px_rgba(0,0,0,0.95)]" />
+            </div>
         )}
 
         {/* 2X Playback Speed HUD Overlay when holding */}

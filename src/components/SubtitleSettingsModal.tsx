@@ -1,5 +1,6 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'motion/react';
 import { X, Sliders, Type, Palette, Info, Check, Sparkles, MoveVertical, Globe, Settings2, FastForward } from 'lucide-react';
 import { SubtitleSettings, AnimeItem } from '../types/anime';
 
@@ -35,8 +36,6 @@ export const SubtitleSettingsModal: React.FC<SubtitleSettingsModalProps> = ({
   onUpdateSubtitleSettings,
   hasSubtitles = true,
 }) => {
-  if (!isOpen) return null;
-
   // Mock subtitle tracks for the selected anime (or dynamically generated/derived)
   const availableTracks = [
     { id: 'en-us', label: 'English (US) [Official CC]', lang: 'ENG', active: true },
@@ -54,14 +53,26 @@ export const SubtitleSettingsModal: React.FC<SubtitleSettingsModalProps> = ({
   };
 
   const modalContent = (
-    <div
-      className="fixed inset-0 z-55 flex flex-col justify-end bg-black/80 backdrop-blur-xs text-zinc-100 select-none animate-fade-in"
-      onClick={onClose}
-    >
-      <div
-        className="w-full max-w-md mx-auto bg-zinc-900/98 border border-white/20 rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl overflow-hidden max-h-[85vh] overflow-y-auto shadow-[0_0_25px_rgba(255,255,255,0.08)]"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          key="subtitle-settings-backdrop"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2, ease: 'easeOut' }}
+          className="fixed inset-0 z-55 flex flex-col justify-end bg-black/80 backdrop-blur-xs text-zinc-100 select-none"
+          onClick={onClose}
+        >
+          <motion.div
+            key="subtitle-settings-sheet"
+            initial={{ y: '100%', opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: '100%', opacity: 0 }}
+            transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+            className="w-full max-w-md mx-auto bg-zinc-900/98 border border-white/20 rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl overflow-hidden max-h-[85vh] overflow-y-auto shadow-[0_0_25px_rgba(255,255,255,0.08)]"
+            onClick={(e) => e.stopPropagation()}
+          >
         {/* Grabbing Handle */}
         <div className="w-10 h-1 bg-white/40 rounded-full mx-auto mb-3" />
 
@@ -324,8 +335,10 @@ export const SubtitleSettingsModal: React.FC<SubtitleSettingsModalProps> = ({
             ))}
           </div>
         </div>
-      </div>
-    </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 
   const mountTarget =

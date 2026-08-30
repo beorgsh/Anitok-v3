@@ -27,9 +27,10 @@ html, body, #root {
 }
 
 #app-feed-container {
-  overscroll-behavior-y: contain !important;
+  overscroll-behavior-y: none !important;
   -webkit-overflow-scrolling: touch;
   scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
 }
 
 @keyframes heartFly {

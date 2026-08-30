@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { X, Heart, Send, Smile, MessageSquare } from 'lucide-react';
 import { AnimeItem, Comment } from '../types/anime';
 
@@ -58,8 +59,6 @@ export const CommentsDrawer: React.FC<CommentsDrawerProps> = ({
   const [inputText, setInputText] = useState<string>('');
   const [selectedEp, setSelectedEp] = useState<number>(currentEp);
 
-  if (!isOpen) return null;
-
   const handleToggleLike = (id: string) => {
     setComments((prev) =>
       prev.map((c) => {
@@ -94,15 +93,27 @@ export const CommentsDrawer: React.FC<CommentsDrawerProps> = ({
   };
 
   return (
-    <div
-      id={`comments-drawer-${anime.id}`}
-      className="fixed inset-0 z-50 flex flex-col justify-end bg-black/75 backdrop-blur-xs transition-opacity animate-fade-in"
-      onClick={onClose}
-    >
-      <div
-        className="w-full max-w-md mx-auto h-[75vh] bg-zinc-900/98 backdrop-blur-2xl border-t border-zinc-800 rounded-t-3xl flex flex-col shadow-2xl overflow-hidden animate-slide-up"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          id={`comments-drawer-${anime.id}`}
+          key="comments-drawer-backdrop"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2, ease: 'easeOut' }}
+          className="fixed inset-0 z-50 flex flex-col justify-end bg-black/75 backdrop-blur-xs transition-opacity"
+          onClick={onClose}
+        >
+          <motion.div
+            key="comments-drawer-sheet"
+            initial={{ y: '100%', opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: '100%', opacity: 0 }}
+            transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+            className="w-full max-w-md mx-auto h-[75vh] bg-zinc-900/98 backdrop-blur-2xl border-t border-zinc-800 rounded-t-3xl flex flex-col shadow-2xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
         {/* Top grab bar handle */}
         <div className="w-10 h-1 bg-zinc-700 rounded-full mx-auto mb-2 mt-3" />
 
@@ -225,7 +236,9 @@ export const CommentsDrawer: React.FC<CommentsDrawerProps> = ({
             <Send className="w-3.5 h-3.5" />
           </button>
         </form>
-      </div>
-    </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };

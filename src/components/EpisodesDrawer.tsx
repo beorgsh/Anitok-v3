@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'motion/react';
 import { X, Play, Heart, Sparkles, CheckCircle2, Search, ArrowUpRight, Check } from 'lucide-react';
 import { AnimeItem, AnimeEpisodeMetadata, getLatestEpisode } from '../types/anime';
 import { fetchAnimeEpisodesMetadata } from '../services/animeApi';
@@ -159,8 +160,6 @@ export const EpisodesDrawer: React.FC<EpisodesDrawerProps> = ({
     };
   }, [isOpen, anime.ani_id, anime.mal_id, anime.id]);
 
-  if (!isOpen) return null;
-
   const parsedTotal = anime.episodes ? parseInt(String(anime.episodes), 10) : 0;
   const latestEp = getLatestEpisode(anime);
   const totalEpCount = latestEp > 0 ? latestEp : (parsedTotal > 0 ? parsedTotal : (metadataList.length > 0 ? metadataList.length : 1));
@@ -251,15 +250,27 @@ export const EpisodesDrawer: React.FC<EpisodesDrawerProps> = ({
   const paginatedEpisodeNumbers = displayedEpisodeNumbers.slice(startIndex, startIndex + PAGE_SIZE);
 
   const drawerContent = (
-    <div
-      id={`episodes-drawer-${anime.id}`}
-      className="fixed inset-0 z-50 flex flex-col justify-end bg-black/75 backdrop-blur-xs transition-opacity animate-fade-in"
-      onClick={onClose}
-    >
-      <div
-        className="w-full max-w-lg mx-auto h-[84vh] sm:h-[80vh] bg-zinc-900/98 backdrop-blur-2xl border-t border-zinc-800 rounded-t-3xl flex flex-col shadow-2xl overflow-hidden animate-slide-up"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          id={`episodes-drawer-${anime.id}`}
+          key="episodes-drawer-backdrop"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2, ease: 'easeOut' }}
+          className="fixed inset-0 z-50 flex flex-col justify-end bg-black/75 backdrop-blur-xs transition-opacity"
+          onClick={onClose}
+        >
+          <motion.div
+            key="episodes-drawer-sheet"
+            initial={{ y: '100%', opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: '100%', opacity: 0 }}
+            transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+            className="w-full max-w-lg mx-auto h-[84vh] sm:h-[80vh] bg-zinc-900/98 backdrop-blur-2xl border-t border-zinc-800 rounded-t-3xl flex flex-col shadow-2xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
         {/* TikTok Drag Handle */}
         <div className="w-10 h-1 bg-zinc-700 rounded-full mx-auto mb-1 mt-3 shrink-0" />
 
@@ -598,8 +609,10 @@ export const EpisodesDrawer: React.FC<EpisodesDrawerProps> = ({
             <span>Jump</span>
           </button>
         </form>
-      </div>
-    </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 
   const mountTarget =
